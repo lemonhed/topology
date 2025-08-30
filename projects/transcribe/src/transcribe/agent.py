@@ -3,6 +3,7 @@ from __future__ import annotations
 from enum import Enum
 
 from agents import Agent, function_tool
+from agents.realtime import RealtimeAgent, RealtimeRunner, RealtimeSession, RealtimeSessionEvent
 
 from .service import WhiteboardService
 
@@ -69,4 +70,12 @@ def create_agent() -> Agent:
             delete_item,
         ],
         model="gpt-4o-mini",
+    )
+
+
+def create_realtime_agent() -> RealtimeAgent:
+    return RealtimeAgent(
+        name="Assistant",
+        instructions=SYSTEM_PROMPT,
+        tools=[draw_item, connect, delete_item],
     )

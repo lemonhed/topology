@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import asyncio
-from typing import AsyncGenerator
+import contextlib
+import signal
+import sys
+from typing import Any, AsyncGenerator
 
 import numpy as np
 import sounddevice as sd
@@ -23,9 +26,7 @@ class MicrophoneStreamer:
         self._audio_queue: asyncio.Queue[np.ndarray] = asyncio.Queue()
         self._running = False
 
-    def _audio_callback(
-        self, indata: np.ndarray, frames: int, time: sd.CallbackFlags, status: sd.CallbackStatus
-    ) -> None:
+    def _audio_callback(self, indata: np.ndarray, frames: int, time: Any, status: Any) -> None:
         """Callback for audio input."""
         if status:
             print(f"[Microphone] Audio status: {status}")
@@ -80,9 +81,39 @@ async def run_microphone_pipeline(device: str | None = None) -> None:
 
     print("[Microphone] Starting real-time voice whiteboard...")
     print("[Microphone] Speak commands like: 'Draw me a database, then draw me a person'")
-    print("[Microphone] Press Ctrl+C to stop")
+    print("[Microphone] Press 'a' + Enter, send SIGUSR1, or Ctrl+C to stop")
+
+    # Predefine variables to avoid possibly-unbound lints
+    prev_sigusr1: Any | None = None
+    prev_sigterm: Any | None = None
+    stdin_task: asyncio.Task[Any] | None = None
 
     try:
+        # Install signal-based stop handler
+        def _signal_stop_handler(_sig: int, _frame: Any) -> None:
+            microphone.stop()
+
+        with contextlib.suppress(Exception):
+            prev_sigusr1 = signal.getsignal(signal.SIGUSR1)
+            signal.signal(signal.SIGUSR1, _signal_stop_handler)
+        with contextlib.suppress(Exception):
+            prev_sigterm = signal.getsignal(signal.SIGTERM)
+            signal.signal(signal.SIGTERM, _signal_stop_handler)
+
+        # Simple stdin watcher: press 'a' + Enter to stop
+        async def _stdin_stop_watcher() -> None:
+            while True:
+                line: str = ""
+                with contextlib.suppress(Exception):
+                    line = await asyncio.to_thread(sys.stdin.readline)
+                if not line:
+                    return
+                if line.strip().lower() == "a":
+                    microphone.stop()
+                    return
+
+        stdin_task = asyncio.create_task(_stdin_stop_watcher())
+
         # Create streamed audio input
         streamed_input = StreamedAudioInput()
 
@@ -115,6 +146,17 @@ async def run_microphone_pipeline(device: str | None = None) -> None:
         print(f"[Microphone] Error: {e}")
     finally:
         microphone.stop()
+        # Restore previous signal handlers
+        if prev_sigusr1 is not None:
+            with contextlib.suppress(Exception):
+                signal.signal(signal.SIGUSR1, prev_sigusr1)
+        if prev_sigterm is not None:
+            with contextlib.suppress(Exception):
+                signal.signal(signal.SIGTERM, prev_sigterm)
+        # Cancel stdin watcher
+        if stdin_task is not None:
+            with contextlib.suppress(Exception):
+                stdin_task.cancel()
 
         # Print final whiteboard state
         print(f"\n[Final] Whiteboard items: {pipeline.service.list_items()}")
