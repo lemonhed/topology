@@ -50,6 +50,40 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
     setIsRealtimeConnecting(true)
     setError(null)
     try {
+      // Geometry helpers for connections
+      const centerOf = (s: any) => ({
+        x: (s.x ?? 0) + ((s.props?.w ?? 0) / 2),
+        y: (s.y ?? 0) + ((s.props?.h ?? 0) / 2),
+      })
+
+      const edgePointRect = (center: { x: number; y: number }, halfW: number, halfH: number, toward: { x: number; y: number }) => {
+        const dx = toward.x - center.x
+        const dy = toward.y - center.y
+        if (dx === 0 && dy === 0) return { x: center.x, y: center.y }
+        const tx = halfW / Math.abs(dx || 1e-9)
+        const ty = halfH / Math.abs(dy || 1e-9)
+        const t = Math.min(tx, ty)
+        return { x: center.x + dx * t, y: center.y + dy * t }
+      }
+
+      const edgePointEllipse = (center: { x: number; y: number }, halfW: number, halfH: number, toward: { x: number; y: number }) => {
+        const dx = toward.x - center.x
+        const dy = toward.y - center.y
+        if (dx === 0 && dy === 0) return { x: center.x, y: center.y }
+        const scale = 1 / Math.sqrt((dx * dx) / (halfW * halfW || 1e-9) + (dy * dy) / (halfH * halfH || 1e-9))
+        return { x: center.x + dx * scale, y: center.y + dy * scale }
+      }
+
+      const edgePoint = (s: any, toward: { x: number; y: number }) => {
+        const c = centerOf(s)
+        const hw = (s.props?.w ?? 0) / 2
+        const hh = (s.props?.h ?? 0) / 2
+        const geo = s.props?.geo
+        if (geo === 'rectangle') return edgePointRect(c, hw, hh, toward)
+        if (geo === 'ellipse') return edgePointEllipse(c, hw, hh, toward)
+        return c
+      }
+
       // Whiteboard tools
       const drawItem = tool({
         name: 'draw_item',
@@ -57,18 +91,29 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
         parameters: z.object({
           item_type: z.enum(['database', 'person']),
         }),
-        execute: async ({ item_type }) => {
+        execute: async ({ item_type }: { item_type: 'database' | 'person' }) => {
           const editor = editorRef.current
           if (!editor) throw new Error('Editor not initialised')
 
-          const id = (globalThis as any).crypto?.randomUUID?.() || `${Date.now()}_${Math.random().toString(36).slice(2)}`
-          const type = item_type === 'person' ? 'user' : 'database'
-
-          console.log('Drawing item:', item_type)
-
-          // TODO: Actually draw the item
-
-          return id
+          const uuid = (globalThis as any).crypto?.randomUUID?.() || `${Date.now()}_${Math.random().toString(36).slice(2)}`
+          const shapeId = `shape:${uuid}`
+          const isPerson = item_type === 'person'
+          const shape = {
+            id: shapeId,
+            type: 'geo',
+            x: 200,
+            y: 150,
+            props: {
+              geo: isPerson ? 'ellipse' : 'ellipse',
+              w: isPerson ? 80 : 120,
+              h: isPerson ? 80 : 80,
+              fill: 'solid',
+              color: isPerson ? 'orange' : 'blue',
+              text: isPerson ? 'person' : 'database',
+            },
+          }
+          editor.createShapes([shape])
+          return uuid
         },
       })
 
@@ -79,16 +124,35 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
           item1_uuid: z.string(),
           item2_uuid: z.string(),
         }),
-        execute: async ({ item1_uuid, item2_uuid }) => {
+        execute: async ({ item1_uuid, item2_uuid }: { item1_uuid: string; item2_uuid: string }) => {
           const editor = editorRef.current
           if (!editor) throw new Error('Editor not initialised')
 
           console.log('Connecting items:', item1_uuid, item2_uuid)
 
-          const arrowId = (globalThis as any).crypto?.randomUUID?.() || `${Date.now()}_${Math.random().toString(36).slice(2)}`
-          // Create an arrow bound to the two shapes
+          const a = editor.getShape?.(`shape:${item1_uuid}`)
+          const b = editor.getShape?.(`shape:${item2_uuid}`)
+          if (!a || !b) throw new Error('One or both items not found on canvas')
 
-          // TODO: Actually draw the item
+          const ca = centerOf(a)
+          const cb = centerOf(b)
+          const start = edgePoint(a, cb)
+          const end = edgePoint(b, ca)
+
+          const arrowId = `shape:connection_${item1_uuid}_${item2_uuid}`
+          editor.createShapes([
+            {
+              id: arrowId,
+              type: 'arrow',
+              props: {
+                start,
+                end,
+                bend: 0,
+                color: 'black',
+                size: 'm',
+              },
+            },
+          ])
           return 'ok'
         },
       })
@@ -99,13 +163,12 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
         parameters: z.object({
           item_uuid: z.string(),
         }),
-        execute: async ({ item_uuid }) => {
+        execute: async ({ item_uuid }: { item_uuid: string }) => {
           const editor = editorRef.current
           if (!editor) throw new Error('Editor not initialised')
           
-          // TODO: Actually draw the item
-
-          console.log('Deleting item:', item_uuid)
+          const shape = editor.getShape?.(`shape:${item_uuid}`)
+          if (shape) editor.deleteShapes([shape.id])
           return 'ok'
         },
       })

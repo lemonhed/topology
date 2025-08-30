@@ -180,37 +180,7 @@ export default function Whiteboard() {
         >
           Test: Draw LLM
         </button>
-        
 
-        <button{/* Connect controls */}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <input
-            value={fromId}
-            onChange={(e) => setFromId(e.target.value)}
-            placeholder="from id (e.g., test-db)"
-            style={{ padding: '4px 6px' }}
-          />
-          <span>→</span>
-          <input
-            value={toId}
-            onChange={(e) => setToId(e.target.value)}
-            placeholder="to id (e.g., api-server)"
-            style={{ padding: '4px 6px' }}
-          />
-          <button
-            onClick={testConnectItems}
-            style={{
-              background: '#cc6600',
-              border: 'none',
-              color: 'white',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Test: Connect Items
-          </button>
-        </div>
         {/* Connect controls */}
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <input
@@ -240,6 +210,7 @@ export default function Whiteboard() {
             Test: Connect Items
           </button>
         </div>
+        {/* duplicate block removed */}
       </div>
 
       {/* tldraw Canvas */}
@@ -248,7 +219,6 @@ export default function Whiteboard() {
           // Provide editor to hooks
           setEditorRealtime(editor)
           setEditorOpenAI(editor)
-          setEditor(editor)
           editorRef.current = editor
           console.log('tldraw editor mounted')
         }}
