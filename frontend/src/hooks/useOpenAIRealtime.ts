@@ -189,10 +189,37 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
         },
       })
 
+      const addText = tool({
+        name: 'add_text',
+        description: 'Add text to the whiteboard',
+        parameters: z.object({
+          text: z.string(),
+        }),
+        execute: async ({ text }: { text: string }) => {
+          const editor = editorRef.current
+          if (!editor) throw new Error('Editor not initialised')
+
+          const uuid = (globalThis as any).crypto?.randomUUID?.() || `${Date.now()}_${Math.random().toString(36).slice(2)}`
+          const shape = {
+            id: `shape:${uuid}`,
+            type: 'text',
+            x: Math.random() * 400 + 100,
+            y: Math.random() * 300 + 100,
+            props: {
+              text,
+              size: 'm',
+              color: 'black',
+            },
+          }
+          editor.createShapes([shape])
+          return uuid
+        },
+      })
+
       const agent = new RealtimeAgent({
         name: 'Assistant',
         instructions: SYSTEM_PROMPT,
-        tools: [drawItem, connectItems, deleteItem]
+        tools: [drawItem, connectItems, deleteItem, addText]
       });
 
       const session = new RealtimeSession(agent)
