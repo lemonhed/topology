@@ -1,13 +1,15 @@
 import { Tldraw } from 'tldraw'
 import 'tldraw/tldraw.css'
 import { useRealtime } from './hooks/useRealtime'
-import { DatabaseShape, DatabaseShapeUtil } from './components/ui/DatabaseShape'
-import { ServerShape, ServerShapeUtil } from './components/ui/ServerShape'
-import { UserShape, UserShapeUtil } from './components/ui/UserShape'
-import { LLMShape, LLMShapeUtil } from './components/ui/LLMShape'
+import { useOpenAIRealtime } from './hooks/useOpenAIRealtime'
+import { DatabaseShapeUtil } from './components/ui/DatabaseShape'
+import { ServerShapeUtil } from './components/ui/ServerShape'
+import { UserShapeUtil } from './components/ui/UserShape'
+import { LLMShapeUtil } from './components/ui/LLMShape'
 
 export default function Whiteboard() {
-  const { isConnected, isRecording, startRecording, stopRecording, sendTestCommand, setEditor } = useRealtime()
+  const { isConnected, isRecording, startRecording, stopRecording, sendTestCommand } = useRealtime()
+  const { token, setToken, isRealtimeConnected, isRealtimeConnecting, isMuted, error, connectRealtime, disconnectRealtime, toggleMute } = useOpenAIRealtime()
 
   const testDrawDatabase = async () => {
     try {
@@ -75,6 +77,55 @@ export default function Whiteboard() {
             {isConnected ? 'Connected' : 'Disconnected'}
           </span>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <input
+            type="password"
+            value={token}
+            onChange={(e) => setToken(((e.target as HTMLInputElement).value || '').trim())}
+            placeholder="Ephemeral realtime token"
+            style={{
+              padding: '4px 8px',
+              borderRadius: '4px',
+              border: '1px solid #ddd',
+              width: 260
+            }}
+          />
+          <button
+            onClick={isRealtimeConnected ? disconnectRealtime : connectRealtime}
+            disabled={isRealtimeConnecting || (!isRealtimeConnected && !token)}
+            style={{
+              background: isRealtimeConnected ? '#ff4444' : '#4a7dff',
+              opacity: isRealtimeConnecting ? 0.7 : 1,
+              border: 'none',
+              color: 'white',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              cursor: isRealtimeConnecting ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {isRealtimeConnected ? 'Disconnect Realtime' : (isRealtimeConnecting ? 'Connecting...' : 'Connect Realtime')}
+          </button>
+          <button
+            onClick={toggleMute}
+            disabled={!isRealtimeConnected}
+            style={{
+              background: isMuted ? '#888' : '#222',
+              border: 'none',
+              color: 'white',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              cursor: !isRealtimeConnected ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {isMuted ? 'Unmute' : 'Mute'}
+          </button>
+          <span style={{ color: isRealtimeConnected ? 'green' : 'red' }}>
+            {isRealtimeConnected ? (isMuted ? 'Muted' : 'Unmuted') : 'Realtime idle'}
+          </span>
+        </div>
+        {error ? (
+          <span style={{ color: '#cc0000' }}>{error}</span>
+        ) : null}
         <button
           onClick={isRecording ? stopRecording : startRecording}
           style={{
