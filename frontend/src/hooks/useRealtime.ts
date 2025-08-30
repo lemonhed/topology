@@ -102,12 +102,75 @@ export function useRealtime(): RealtimeState {
           console.log('Removed shape:', command.shapeId)
         }
         break
-      case 'draw_connection':
-        if (command.arrow) {
-          editor.createShapes([command.arrow])
-          console.log('Drew connection:', command.arrow.id)
+      case 'connect_items': {
+        const fromId: string | undefined = command.fromId
+        const toId: string | undefined = command.toId
+        if (!fromId || !toId) return
+
+        const a = editor.getShape?.(`shape:${fromId}`)
+        const b = editor.getShape?.(`shape:${toId}`)
+        if (!a || !b) {
+          console.warn('connect_items: missing shapes on canvas', { fromId, toId })
+          return
         }
+
+        // Helpers
+        const centerOf = (s: any) => ({
+          x: (s.x ?? 0) + ((s.props?.w ?? 0) / 2),
+          y: (s.y ?? 0) + ((s.props?.h ?? 0) / 2),
+        })
+
+        const edgePointRect = (center: { x: number; y: number }, halfW: number, halfH: number, toward: { x: number; y: number }) => {
+          const dx = toward.x - center.x
+          const dy = toward.y - center.y
+          if (dx === 0 && dy === 0) return { x: center.x, y: center.y }
+          const tx = halfW / Math.abs(dx || 1e-9)
+          const ty = halfH / Math.abs(dy || 1e-9)
+          const t = Math.min(tx, ty)
+          return { x: center.x + dx * t, y: center.y + dy * t }
+        }
+
+        const edgePointEllipse = (center: { x: number; y: number }, halfW: number, halfH: number, toward: { x: number; y: number }) => {
+          const dx = toward.x - center.x
+          const dy = toward.y - center.y
+          if (dx === 0 && dy === 0) return { x: center.x, y: center.y }
+          const scale = 1 / Math.sqrt((dx * dx) / (halfW * halfW || 1e-9) + (dy * dy) / (halfH * halfH || 1e-9))
+          return { x: center.x + dx * scale, y: center.y + dy * scale }
+        }
+
+        const edgePoint = (s: any, toward: { x: number; y: number }) => {
+          const c = centerOf(s)
+          const hw = (s.props?.w ?? 0) / 2
+          const hh = (s.props?.h ?? 0) / 2
+          const geo = s.props?.geo
+          if (geo === 'rectangle') return edgePointRect(c, hw, hh, toward)
+          if (geo === 'ellipse') return edgePointEllipse(c, hw, hh, toward)
+          // Fallback: center
+          return c
+        }
+
+        const ca = centerOf(a)
+        const cb = centerOf(b)
+        const start = edgePoint(a, cb)
+        const end = edgePoint(b, ca)
+
+        const arrowId = `shape:connection_${fromId}_${toId}`
+        editor.createShapes([
+          {
+            id: arrowId,
+            type: 'arrow',
+            props: {
+              start,
+              end,
+              bend: 0,
+              color: 'black',
+              size: 'm',
+            },
+          },
+        ])
+        console.log('Drew connection:', arrowId)
         break
+      }
       default:
         console.log('Unknown command type:', command.type)
     }

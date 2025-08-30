@@ -93,9 +93,20 @@ def get_connection_definition(item1: str, item2: str) -> Dict[str, Any]:
         "id": connection_id,
         "type": "arrow",
         "props": {
-            "start": {"type": "binding", "boundShapeId": f"shape:{item1}", "normalizedAnchor": {"x": 0.5, "y": 0.5}},
-            "end": {"type": "binding", "boundShapeId": f"shape:{item2}", "normalizedAnchor": {"x": 0.5, "y": 0.5}},
+            # start / end are points
+            "start": {"x": 0, "y": 0},
+            "end": {"x": 0, "y": 0},
+            # bindings reference existing shapes
+            "startBinding": {
+                "boundShapeId": f"shape:{item1}",
+                "normalizedAnchor": {"x": 0.5, "y": 0.5}
+            },
+            "endBinding": {
+                "boundShapeId": f"shape:{item2}",
+                "normalizedAnchor": {"x": 0.5, "y": 0.5}
+            },
             "color": "black",
-            "size": "m"
+            "size": "m",
+            "bend": 0
         }
     }

@@ -32,11 +32,11 @@ async def test_draw_item(item_type: str, item_name: str):
 
 @app.get("/test-connect/{item1}/{item2}")
 async def test_connect_items(item1: str, item2: str):
-    """Test endpoint to simulate a tool call for connecting two items."""
-    arrow = get_connection_definition(item1, item2)
+    """Return a minimal connect command; frontend computes arrow geometry."""
     return {
-        "type": "draw_connection",
-        "arrow": arrow
+        "type": "connect_items",
+        "fromId": item1,
+        "toId": item2,
     }
 
 
