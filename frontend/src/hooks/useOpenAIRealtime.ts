@@ -102,11 +102,11 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
         name: 'draw_item',
         description: 'Draw an item on the canvas. Coordinates are in pixels from top-left. Canvas is roughly 1000x600.',
         parameters: z.object({
-          item_type: z.enum(['database', 'person', 'server', 'llm']),
+          item_type: z.enum(['database', 'person', 'server', 'llm', 'frontend']),
           x: z.number().describe('X coordinate in pixels'),
           y: z.number().describe('Y coordinate in pixels'),
         }),
-        execute: async ({ item_type, x, y }: { item_type: 'database' | 'person' | 'server' | 'llm', x: number, y: number }) => {
+        execute: async ({ item_type, x, y }: { item_type: 'database' | 'person' | 'server' | 'llm' | 'frontend', x: number, y: number }) => {
           const editor = editorRef.current
           if (!editor) throw new Error('Editor not initialised')
 
@@ -118,7 +118,8 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
             'database': 'database',
             'person': 'user', 
             'server': 'server',
-            'llm': 'llm'
+            'llm': 'llm',
+            'frontend': 'frontend',
           }
           
           const shape = {
