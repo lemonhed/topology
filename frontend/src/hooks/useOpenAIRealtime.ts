@@ -66,35 +66,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
 
           console.log('Drawing item:', item_type)
 
-          // Try to place near viewport centre
-          let x = 0
-          let y = 0
-          try {
-            const center = editor.getViewportScreenCenter?.()
-            if (center) {
-              x = center.x - 40
-              y = center.y - 40
-            }
-          } catch {
-            // fallback to origin
-          }
-
-          const shapePropsByType: Record<string, { w: number; h: number; color: string }> = {
-            database: { w: 80, h: 100, color: 'green' },
-            user: { w: 60, h: 80, color: 'blue' },
-          }
-
-          const props = shapePropsByType[type] || { w: 80, h: 80, color: 'black' }
-
-          editor.createShapes?.([
-            {
-              id,
-              type,
-              x,
-              y,
-              props,
-            },
-          ])
+          // TODO: Actually draw the item
 
           return id
         },
@@ -115,16 +87,8 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
 
           const arrowId = (globalThis as any).crypto?.randomUUID?.() || `${Date.now()}_${Math.random().toString(36).slice(2)}`
           // Create an arrow bound to the two shapes
-          editor.createShapes?.([
-            {
-              id: arrowId,
-              type: 'arrow',
-              props: {
-                start: { type: 'binding', boundShapeId: item1_uuid },
-                end: { type: 'binding', boundShapeId: item2_uuid },
-              },
-            },
-          ])
+
+          // TODO: Actually draw the item
           return 'ok'
         },
       })
@@ -138,7 +102,9 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
         execute: async ({ item_uuid }) => {
           const editor = editorRef.current
           if (!editor) throw new Error('Editor not initialised')
-          editor.deleteShapes?.([item_uuid])
+          
+          // TODO: Actually draw the item
+
           console.log('Deleting item:', item_uuid)
           return 'ok'
         },
