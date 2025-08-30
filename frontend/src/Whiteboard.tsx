@@ -7,29 +7,44 @@ import { ServerShapeUtil } from './components/ui/ServerShape'
 import { UserShapeUtil } from './components/ui/UserShape'
 import { LLMShapeUtil } from './components/ui/LLMShape'
 import { SuggestionsPopup } from './components/SuggestionsPopup'
-import { useRef, useCallback, useEffect } from 'react'
+import { useRef, useCallback, useEffect, useState } from 'react'
 
 export default function Whiteboard() {
   const { token, setToken, isRealtimeConnected, isRealtimeConnecting, isMuted, error, connectRealtime, disconnectRealtime, toggleMute, setEditor: setEditorOpenAI } = useOpenAIRealtime()
   const editorRef = useRef<any>(null)
 
   // Get OpenAI API key from environment variables
-  const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY || ''
+  const openaiApiKey = import.meta.env?.VITE_OPENAI_API_KEY || ''
+  console.log('OpenAI API Key available:', !!openaiApiKey, openaiApiKey ? openaiApiKey.slice(0, 10) + '...' : 'none')
+  
   const architectureAnalysis = useArchitectureAnalysis(openaiApiKey)
 
-  // Auto-analyze periodically when connected and diagram changes
-  useEffect(() => {
-    if (editorRef.current) {
-      const interval = setInterval(() => {
-        const shapes = editorRef.current?.getCurrentPageShapes()
-        if (shapes && shapes.length > 0) {
-          architectureAnalysis.analyzeDiagram()
-        }
-      }, 10000) // Analyze every 10 seconds
+  // Add state to track if initial analysis has been done
+  const [hasRunInitialAnalysis, setHasRunInitialAnalysis] = useState(false)
 
-      return () => clearInterval(interval)
+  // Queue analysis after the editor is mounted and has initial content
+  useEffect(() => {
+    console.log('Analysis effect triggered:', { 
+      hasEditor: !!editorRef.current, 
+      hasApiKey: !!openaiApiKey, 
+      hasRunInitial: hasRunInitialAnalysis 
+    })
+    
+    if (editorRef.current && openaiApiKey && !hasRunInitialAnalysis) {
+      // Initial analysis after a short delay to let the editor settle
+      const timer = setTimeout(() => {
+        const shapes = editorRef.current?.getCurrentPageShapes()
+        console.log('Checking for shapes:', shapes?.length || 0)
+        if (shapes && shapes.length > 0) {
+          console.log('Running initial analysis after editor mount')
+          architectureAnalysis.analyzeDiagram()
+          setHasRunInitialAnalysis(true)
+        }
+      }, 2000)
+
+      return () => clearTimeout(timer)
     }
-  }, [isRealtimeConnected, token, architectureAnalysis.analyzeDiagram])
+  }, [openaiApiKey, hasRunInitialAnalysis, architectureAnalysis.analyzeDiagram])
 
   const handleAcceptSuggestion = useCallback((suggestion: any) => {
     const editor = editorRef.current
@@ -59,12 +74,70 @@ export default function Whiteboard() {
     }
     
     editor.createShapes([shape])
+    
+    // Create connections if suggested
+    if (suggestion.connections && suggestion.connections.length > 0) {
+      const newShapeId = shapeId
+      
+      suggestion.connections.forEach((connection: any) => {
+        const targetShapeId = `shape:${connection.to_component_id}`
+        const targetShape = editor.getShape(targetShapeId)
+        
+        if (targetShape) {
+          const newShape = editor.getShape(newShapeId)
+          if (newShape) {
+            // Create connection based on direction
+            let fromShape, toShape
+            if (connection.direction === 'to') {
+              fromShape = newShape
+              toShape = targetShape
+            } else if (connection.direction === 'from') {
+              fromShape = targetShape
+              toShape = newShape
+            } else {
+              // bidirectional - create one connection for now
+              fromShape = newShape
+              toShape = targetShape
+            }
+            
+            // Calculate connection points
+            const fromCenter = { 
+              x: fromShape.x + (fromShape.props?.w || 0) / 2, 
+              y: fromShape.y + (fromShape.props?.h || 0) / 2 
+            }
+            const toCenter = { 
+              x: toShape.x + (toShape.props?.w || 0) / 2, 
+              y: toShape.y + (toShape.props?.h || 0) / 2 
+            }
+            
+            const arrowId = `shape:connection_${uuid}_${connection.to_component_id}`
+            editor.createShapes([{
+              id: arrowId,
+              type: 'arrow',
+              props: {
+                start: fromCenter,
+                end: toCenter,
+                bend: 0,
+                color: 'black',
+                size: 'm',
+              },
+            }])
+            
+            console.log(`Created connection: ${connection.description}`)
+          }
+        } else {
+          console.warn(`Target shape not found: ${targetShapeId}`)
+        }
+      })
+    }
+    
     architectureAnalysis.dismissSuggestion(suggestion.id)
     
-    // Trigger a new analysis after adding the component
+    // Queue a new analysis after adding the component
     setTimeout(() => {
+      console.log('Running analysis after component addition')
       architectureAnalysis.analyzeDiagram()
-    }, 1000)
+    }, 1500)
   }, [architectureAnalysis.dismissSuggestion, architectureAnalysis.analyzeDiagram])
 
   return (
@@ -245,7 +318,18 @@ export default function Whiteboard() {
           setEditorOpenAI(editor)
           editorRef.current = editor
           architectureAnalysis.setEditor(editor)
-          console.log('tldraw editor mounted')
+          console.log('tldraw editor mounted, checking for analysis trigger...')
+          
+          // Trigger analysis if we have shapes already and haven't run initial analysis
+          setTimeout(() => {
+            const shapes = editor.getCurrentPageShapes()
+            console.log('Editor mounted, shapes:', shapes?.length || 0)
+            if (shapes && shapes.length > 0 && openaiApiKey && !hasRunInitialAnalysis) {
+              console.log('Triggering analysis from onMount')
+              architectureAnalysis.analyzeDiagram()
+              setHasRunInitialAnalysis(true)
+            }
+          }, 1000)
         }}
       />
 

@@ -57,10 +57,11 @@ export function SuggestionsPopup({
   onAcceptSuggestion,
   lastAnalysis
 }: SuggestionsPopupProps) {
-  const hasContent = suggestions.length > 0 || isAnalyzing || error
+  // Only show popup when there are actual suggestions to display
+  const hasContent = suggestions.length > 0
 
   if (!hasContent) {
-    return null // No UI when there's nothing to show
+    return null // No UI when there are no suggestions
   }
 
   return (
@@ -90,11 +91,6 @@ export function SuggestionsPopup({
           <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#111827' }}>
             💡 Architecture Suggestions
           </h3>
-          {lastAnalysis && (
-            <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#6b7280' }}>
-              Auto-analyzing every 10 seconds
-            </p>
-          )}
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           {suggestions.length > 0 && (
@@ -118,17 +114,6 @@ export function SuggestionsPopup({
 
       {/* Content */}
       <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-        {isAnalyzing && (
-          <div style={{
-            padding: '24px',
-            textAlign: 'center',
-            color: '#6b7280'
-          }}>
-            <div style={{ fontSize: '24px', marginBottom: '8px' }}>🔍</div>
-            <p style={{ margin: 0, fontSize: '14px' }}>Analyzing your architecture...</p>
-          </div>
-        )}
-
         {error && (
           <div style={{
             padding: '16px',
@@ -153,7 +138,7 @@ export function SuggestionsPopup({
 
         {suggestions.map((suggestion) => (
           <div key={suggestion.id} style={{
-            padding: '16px',
+            padding: '12px',
             borderBottom: '1px solid #f3f4f6'
           }}>
             <div style={{
@@ -168,7 +153,7 @@ export function SuggestionsPopup({
                 </span>
                 <h4 style={{
                   margin: 0,
-                  fontSize: '14px',
+                  fontSize: '13px',
                   fontWeight: '600',
                   color: '#111827'
                 }}>
@@ -192,23 +177,27 @@ export function SuggestionsPopup({
             </div>
 
             <p style={{
-              margin: '0 0 8px 0',
-              fontSize: '13px',
+              margin: '0 0 6px 0',
+              fontSize: '12px',
               color: '#4b5563',
-              lineHeight: '1.4'
+              lineHeight: '1.3'
             }}>
               {suggestion.description}
             </p>
 
-            <p style={{
-              margin: '0 0 12px 0',
-              fontSize: '12px',
-              color: '#6b7280',
-              lineHeight: '1.4',
-              fontStyle: 'italic'
-            }}>
-              {suggestion.reasoning}
-            </p>
+            {suggestion.connections && suggestion.connections.length > 0 && (
+              <div style={{
+                margin: '0 0 8px 0',
+                fontSize: '10px',
+                color: '#059669',
+                background: '#ecfdf5',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                border: '1px solid #d1fae5'
+              }}>
+                → {suggestion.connections.map(c => c.description).join(', ')}
+              </div>
+            )}
 
             <button
               onClick={() => onAcceptSuggestion(suggestion)}

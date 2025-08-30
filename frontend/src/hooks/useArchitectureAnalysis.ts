@@ -6,6 +6,11 @@ interface ArchitectureSuggestion {
   description: string
   component_type: 'database' | 'person' | 'server' | 'llm'
   reasoning: string
+  connections?: Array<{
+    to_component_id: string
+    direction: 'from' | 'to' | 'bidirectional'
+    description: string
+  }>
 }
 
 interface UseArchitectureAnalysisState {
@@ -115,38 +120,35 @@ export function useArchitectureAnalysis(apiKey: string): UseArchitectureAnalysis
         return
       }
 
-      const prompt = `You are an expert software architect. Analyze the following architecture diagram and suggest missing components that would improve the system design.
+      const prompt = `Analyze this architecture and suggest 1-2 missing components:
 
-Current Architecture:
-Components: ${JSON.stringify(diagramData.components.map(c => ({ type: c.type, id: c.id.split(':')[1] || c.id })), null, 2)}
-Connections: ${JSON.stringify(diagramData.connections.map(c => ({ from: c.from.split(':')[1] || c.from, to: c.to.split(':')[1] || c.to })), null, 2)}
+Components: ${JSON.stringify(diagramData.components.map(c => ({ 
+  type: c.type, 
+  id: c.id.split(':')[1] || c.id
+})), null, 2)}
+Connections: ${JSON.stringify(diagramData.connections.map(c => ({ 
+  from: c.from.split(':')[1] || c.from, 
+  to: c.to.split(':')[1] || c.to 
+})), null, 2)}
 
-Analyze this architecture and suggest 1-3 missing components that would improve the system. Consider:
-- Data flow and storage needs
-- Security and authentication
-- Monitoring and logging
-- Load balancing and scalability
-- API gateways or middleware
-- Caching layers
-- Message queues or event systems
-
-For each suggestion, provide:
-1. A clear title
-2. A brief description of why it's needed
-3. The component type (database, person, server, llm)
-4. Reasoning for the suggestion
-
-Respond with a JSON array of suggestions in this format:
+Return JSON format:
 [
   {
-    "title": "API Gateway",
-    "description": "Route and manage API requests between client and backend services",
-    "component_type": "server",
-    "reasoning": "Your current architecture shows direct connections between user and backend services. An API gateway would provide better security, rate limiting, and request routing."
+    "title": "Cache",
+    "description": "Speed up data access",
+    "component_type": "database",
+    "reasoning": "Reduce database load",
+    "connections": [
+      {
+        "to_component_id": "existing_id",
+        "direction": "to",
+        "description": "Caches data from DB"
+      }
+    ]
   }
 ]
 
-Only suggest components that are genuinely missing and would add value. If the architecture is already well-designed, return an empty array.`
+Keep titles under 15 chars, descriptions under 25 chars, reasoning under 20 chars. Use actual component IDs. Return [] if complete.`
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
