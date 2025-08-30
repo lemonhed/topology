@@ -33,4 +33,9 @@ body {
   --llm-primary: 271 64% 71%;         /* Purple */
   --llm-secondary: 271 64% 81%;       /* Lighter purple */
   --llm-accent: 271 64% 61%;          /* Darker purple */
+
+  /* Frontend colors */
+  --frontend-primary: 271 64% 71%;         /* Purple */
+  --frontend-secondary: 271 64% 81%;       /* Lighter purple */
+  --frontend-accent: 271 64% 61%;          /* Darker purple */
 }

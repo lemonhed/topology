@@ -4,7 +4,7 @@ interface ArchitectureSuggestion {
   id: string
   title: string
   description: string
-  component_type: 'database' | 'person' | 'server' | 'llm'
+  component_type: 'database' | 'person' | 'server' | 'llm' | 'frontend'
   reasoning: string
 }
 
@@ -28,6 +28,8 @@ const getComponentIcon = (type: string) => {
       return '🖥️'
     case 'llm':
       return '🤖'
+    case 'frontend':
+      return '🖥️'
     default:
       return '📦'
   }

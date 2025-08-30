@@ -4,7 +4,7 @@ interface ArchitectureSuggestion {
   id: string
   title: string
   description: string
-  component_type: 'database' | 'person' | 'server' | 'llm'
+  component_type: 'database' | 'person' | 'server' | 'llm' | 'frontend'
   reasoning: string
   connections?: Array<{
     to_component_id: string
@@ -79,7 +79,7 @@ export function useArchitectureAnalysis(apiKey: string): UseArchitectureAnalysis
               id: shape.id
             })
           }
-        } else if (['database', 'user', 'server', 'llm'].includes(shape.type)) {
+        } else if (['database', 'user', 'server', 'llm', 'frontend'].includes(shape.type)) {
           // Extract component information
           components.push({
             type: shape.type,

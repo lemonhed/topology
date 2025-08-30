@@ -6,6 +6,7 @@ import { DatabaseShapeUtil } from './components/ui/DatabaseShape'
 import { ServerShapeUtil } from './components/ui/ServerShape'
 import { UserShapeUtil } from './components/ui/UserShape'
 import { LLMShapeUtil } from './components/ui/LLMShape'
+import { FrontendShapeUtil } from './components/ui/FrontendShape'
 import { SuggestionsPopup } from './components/SuggestionsPopup'
 import { useRef, useCallback, useEffect, useState } from 'react'
 
@@ -36,7 +37,8 @@ export default function Whiteboard() {
       'database': 'database',
       'person': 'user', 
       'server': 'server',
-      'llm': 'llm'
+      'llm': 'llm',
+      'frontend': 'frontend',
     }
     
     const shape = {
@@ -187,7 +189,7 @@ export default function Whiteboard() {
 
       {/* tldraw Canvas */}
       <Tldraw 
-        shapeUtils={[DatabaseShapeUtil, ServerShapeUtil, UserShapeUtil, LLMShapeUtil]}
+        shapeUtils={[DatabaseShapeUtil, ServerShapeUtil, UserShapeUtil, LLMShapeUtil, FrontendShapeUtil]}
         onMount={(editor) => {
           // Provide editor to hooks
           setEditorOpenAI(editor)
@@ -202,7 +204,7 @@ export default function Whiteboard() {
             console.log('🎯 New shape created:', shape.type, shape.id)
             
             // Only trigger analysis for our custom component types, not arrows
-            if (['database', 'user', 'server', 'llm'].includes(shape.type)) {
+            if (['database', 'user', 'server', 'llm', 'frontend'].includes(shape.type)) {
               console.log('🎯 Component added, queuing analysis in 10 seconds...')
               setTimeout(() => {
                 console.log('🎯 Running analysis after component addition via voice')
