@@ -161,6 +161,8 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
           const end = edgePoint(b, ca)
 
           const arrowId = `shape:connection_${item1_uuid}_${item2_uuid}`
+          
+          // Create the arrow shape
           editor.createShapes([
             {
               id: arrowId,
@@ -173,6 +175,34 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
                 size: 'm',
               },
             },
+          ])
+
+          // Create bindings to make the arrow stick to the shapes
+          editor.createBindings([
+            {
+              id: `binding:${arrowId}_start`,
+              type: 'arrow',
+              fromId: arrowId,
+              toId: `shape:${item1_uuid}`,
+              props: {
+                terminal: 'start',
+                isPrecise: false,
+                isExact: false,
+                normalizedAnchor: { x: 0.5, y: 0.5 }
+              }
+            },
+            {
+              id: `binding:${arrowId}_end`, 
+              type: 'arrow',
+              fromId: arrowId,
+              toId: `shape:${item2_uuid}`,
+              props: {
+                terminal: 'end',
+                isPrecise: false,
+                isExact: false,
+                normalizedAnchor: { x: 0.5, y: 0.5 }
+              }
+            }
           ])
           return 'ok'
         },
