@@ -30,7 +30,8 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
   const SYSTEM_PROMPT =
     'You control a whiteboard. Interpret spoken instructions as immediate tool calls. ' +
     'Do not wait for full sentences if a coherent unit of action is clear. ' +
-    'Allowed item types: database, person. Return UUIDs from draw_item and reuse them.'
+    'Allowed item types: database, person. Return UUIDs from draw_item and reuse them.' +
+    'Do not respond to the user - just perform the actions they request.'
 
   const connectRealtime = useCallback(async () => {
     const apiKey = token.trim()
