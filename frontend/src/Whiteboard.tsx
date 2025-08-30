@@ -1,15 +1,71 @@
 import { Tldraw } from 'tldraw'
 import 'tldraw/tldraw.css'
 import { useOpenAIRealtime } from './hooks/useOpenAIRealtime'
+import { useArchitectureAnalysis } from './hooks/useArchitectureAnalysis'
 import { DatabaseShapeUtil } from './components/ui/DatabaseShape'
 import { ServerShapeUtil } from './components/ui/ServerShape'
 import { UserShapeUtil } from './components/ui/UserShape'
 import { LLMShapeUtil } from './components/ui/LLMShape'
-import { useRef } from 'react'
+import { SuggestionsPopup } from './components/SuggestionsPopup'
+import { useRef, useCallback, useEffect } from 'react'
 
 export default function Whiteboard() {
   const { token, setToken, isRealtimeConnected, isRealtimeConnecting, isMuted, error, connectRealtime, disconnectRealtime, toggleMute, setEditor: setEditorOpenAI } = useOpenAIRealtime()
   const editorRef = useRef<any>(null)
+
+  // Get OpenAI API key from environment variables
+  const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY || ''
+  const architectureAnalysis = useArchitectureAnalysis(openaiApiKey)
+
+  // Auto-analyze periodically when connected and diagram changes
+  useEffect(() => {
+    if (editorRef.current) {
+      const interval = setInterval(() => {
+        const shapes = editorRef.current?.getCurrentPageShapes()
+        if (shapes && shapes.length > 0) {
+          architectureAnalysis.analyzeDiagram()
+        }
+      }, 10000) // Analyze every 10 seconds
+
+      return () => clearInterval(interval)
+    }
+  }, [isRealtimeConnected, token, architectureAnalysis.analyzeDiagram])
+
+  const handleAcceptSuggestion = useCallback((suggestion: any) => {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const uuid = (globalThis as any).crypto?.randomUUID?.() || `${Date.now()}_${Math.random().toString(36).slice(2)}`
+    const shapeId = `shape:${uuid}`
+    
+    // Map suggestion component types to shape types
+    const shapeTypeMap = {
+      'database': 'database',
+      'person': 'user', 
+      'server': 'server',
+      'llm': 'llm'
+    }
+    
+    const shape = {
+      id: shapeId,
+      type: shapeTypeMap[suggestion.component_type as keyof typeof shapeTypeMap] || 'server',
+      x: Math.random() * 400 + 100,
+      y: Math.random() * 300 + 100,
+      props: {
+        w: suggestion.component_type === 'person' ? 60 : suggestion.component_type === 'database' ? 80 : suggestion.component_type === 'llm' ? 100 : 120,
+        h: suggestion.component_type === 'person' ? 80 : suggestion.component_type === 'database' ? 100 : 80,
+        color: suggestion.component_type === 'database' ? 'green' : suggestion.component_type === 'person' ? 'blue' : suggestion.component_type === 'server' ? 'gray' : 'purple',
+      },
+    }
+    
+    editor.createShapes([shape])
+    architectureAnalysis.dismissSuggestion(suggestion.id)
+    
+    // Trigger a new analysis after adding the component
+    setTimeout(() => {
+      architectureAnalysis.analyzeDiagram()
+    }, 1000)
+  }, [architectureAnalysis.dismissSuggestion, architectureAnalysis.analyzeDiagram])
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
@@ -188,8 +244,20 @@ export default function Whiteboard() {
           // Provide editor to hooks
           setEditorOpenAI(editor)
           editorRef.current = editor
+          architectureAnalysis.setEditor(editor)
           console.log('tldraw editor mounted')
         }}
+      />
+
+      {/* Architecture Suggestions Popup */}
+      <SuggestionsPopup
+        suggestions={architectureAnalysis.suggestions}
+        isAnalyzing={architectureAnalysis.isAnalyzing}
+        error={architectureAnalysis.error}
+        onDismiss={architectureAnalysis.dismissSuggestion}
+        onClearAll={architectureAnalysis.clearSuggestions}
+        onAcceptSuggestion={handleAcceptSuggestion}
+        lastAnalysis={architectureAnalysis.lastAnalysis}
       />
     </div>
   )

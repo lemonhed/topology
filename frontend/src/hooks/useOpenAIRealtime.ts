@@ -28,7 +28,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
   const editorRef = useRef<any>(null)
 
   const SYSTEM_PROMPT =
-    'You control a whiteboard. Interpret spoken instructions as immediate tool calls. ' +
+    'Only use English for responses. You control a whiteboard. Interpret spoken instructions as immediate tool calls. ' +
     'Do not wait for full sentences if a coherent unit of action is clear. ' +
     'Allowed item types: database, person, server, llm. Return UUIDs from draw_item and reuse them.' +
     'Don\'t be too chatty. Just do what the user asks for, with brief responses.'
@@ -222,7 +222,16 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
         tools: [drawItem, connectItems, deleteItem, addText]
       });
 
-      const session = new RealtimeSession(agent)
+      const session = new RealtimeSession(agent, {
+        config: {
+          turnDetection: {
+            type: 'semantic_vad',
+            eagerness: 'high',
+            createResponse: true,
+            interruptResponse: true,
+          },
+        },
+      })
 
       // Log transport events from the realtime server
       session.on('transport_event', (event: unknown) => {
