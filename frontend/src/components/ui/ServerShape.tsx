@@ -51,24 +51,24 @@ export class ServerShapeUtil extends BaseBoxShapeUtil<ServerShape> {
             y="25"
             width="70"
             height="40"
-            fill="none"
-            stroke="currentColor"
+            fill="hsl(var(--server-primary) / 0.1)"
+            stroke="hsl(var(--server-primary))"
             strokeWidth="2"
           />
           
           {/* Top face (parallelogram for 3D effect) */}
           <path
             d="M15 25 L25 15 L95 15 L85 25 Z"
-            fill="none"
-            stroke="currentColor"
+            fill="hsl(var(--server-secondary) / 0.2)"
+            stroke="hsl(var(--server-secondary))"
             strokeWidth="2"
           />
           
           {/* Right side face (parallelogram for 3D effect) */}
           <path
             d="M85 25 L95 15 L95 55 L85 65 Z"
-            fill="none"
-            stroke="currentColor"
+            fill="hsl(var(--server-secondary) / 0.15)"
+            stroke="hsl(var(--server-secondary))"
             strokeWidth="2"
           />
           
@@ -78,8 +78,8 @@ export class ServerShapeUtil extends BaseBoxShapeUtil<ServerShape> {
             y="30"
             width="60"
             height="8"
-            fill="none"
-            stroke="currentColor"
+            fill="hsl(var(--server-accent) / 0.3)"
+            stroke="hsl(var(--server-primary))"
             strokeWidth="1"
           />
           
@@ -88,8 +88,8 @@ export class ServerShapeUtil extends BaseBoxShapeUtil<ServerShape> {
             y="42"
             width="60"
             height="8"
-            fill="none"
-            stroke="currentColor"
+            fill="hsl(var(--server-accent) / 0.3)"
+            stroke="hsl(var(--server-primary))"
             strokeWidth="1"
           />
           
@@ -98,20 +98,20 @@ export class ServerShapeUtil extends BaseBoxShapeUtil<ServerShape> {
             y="54"
             width="60"
             height="8"
-            fill="none"
-            stroke="currentColor"
+            fill="hsl(var(--server-accent) / 0.3)"
+            stroke="hsl(var(--server-primary))"
             strokeWidth="1"
           />
           
           {/* Power indicators */}
-          <circle cx="25" cy="34" r="1.5" fill="currentColor" />
-          <circle cx="25" cy="46" r="1.5" fill="currentColor" />
-          <circle cx="25" cy="58" r="1.5" fill="currentColor" />
+          <circle cx="25" cy="34" r="1.5" fill="hsl(var(--server-secondary))" />
+          <circle cx="25" cy="46" r="1.5" fill="hsl(var(--server-secondary))" />
+          <circle cx="25" cy="58" r="1.5" fill="hsl(var(--server-secondary))" />
           
           {/* Vents on right side */}
-          <line x1="88" y1="20" x2="88" y2="50" stroke="currentColor" strokeWidth="1" opacity="0.6" />
-          <line x1="90" y1="22" x2="90" y2="48" stroke="currentColor" strokeWidth="1" opacity="0.6" />
-          <line x1="92" y1="24" x2="92" y2="46" stroke="currentColor" strokeWidth="1" opacity="0.6" />
+          <line x1="88" y1="20" x2="88" y2="50" stroke="hsl(var(--server-secondary))" strokeWidth="1" opacity="0.8" />
+          <line x1="90" y1="22" x2="90" y2="48" stroke="hsl(var(--server-secondary))" strokeWidth="1" opacity="0.8" />
+          <line x1="92" y1="24" x2="92" y2="46" stroke="hsl(var(--server-secondary))" strokeWidth="1" opacity="0.8" />
           
           {/* Server label */}
           <text 
@@ -119,7 +119,7 @@ export class ServerShapeUtil extends BaseBoxShapeUtil<ServerShape> {
             y="76" 
             textAnchor="middle" 
             fontSize="9" 
-            fill="currentColor"
+            fill="hsl(var(--server-primary))"
             fontFamily="system-ui, sans-serif"
             fontWeight="bold"
           >

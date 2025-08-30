@@ -49,8 +49,8 @@ export class DatabaseShapeUtil extends BaseBoxShapeUtil<DatabaseShape> {
             y="15"
             width="40"
             height="70"
-            fill="none"
-            stroke="currentColor"
+            fill="hsl(var(--database-primary) / 0.05)"
+            stroke="hsl(var(--database-primary))"
             strokeWidth="2"
           />
           
@@ -60,8 +60,8 @@ export class DatabaseShapeUtil extends BaseBoxShapeUtil<DatabaseShape> {
             cy="15"
             rx="20"
             ry="6"
-            fill="none"
-            stroke="currentColor"
+            fill="hsl(var(--database-primary) / 0.3)"
+            stroke="hsl(var(--database-primary))"
             strokeWidth="2"
           />
           
@@ -71,8 +71,8 @@ export class DatabaseShapeUtil extends BaseBoxShapeUtil<DatabaseShape> {
             cy="40"
             rx="20"
             ry="6"
-            fill="none"
-            stroke="currentColor"
+            fill="hsl(var(--database-secondary) / 0.3)"
+            stroke="hsl(var(--database-secondary))"
             strokeWidth="2"
           />
           
@@ -82,8 +82,8 @@ export class DatabaseShapeUtil extends BaseBoxShapeUtil<DatabaseShape> {
             cy="65"
             rx="20"
             ry="6"
-            fill="none"
-            stroke="currentColor"
+            fill="hsl(var(--database-accent) / 0.3)"
+            stroke="hsl(var(--database-accent))"
             strokeWidth="2"
           />
           
@@ -93,10 +93,20 @@ export class DatabaseShapeUtil extends BaseBoxShapeUtil<DatabaseShape> {
             cy="85"
             rx="20"
             ry="6"
-            fill="none"
-            stroke="currentColor"
+            fill="hsl(var(--database-primary) / 0.4)"
+            stroke="hsl(var(--database-primary))"
             strokeWidth="2"
           />
+          
+          {/* Data visualization dots */}
+          <circle cx="30" cy="25" r="1" fill="hsl(var(--database-accent))" opacity="0.8" />
+          <circle cx="35" cy="28" r="1" fill="hsl(var(--database-secondary))" opacity="0.8" />
+          <circle cx="45" cy="27" r="1" fill="hsl(var(--database-primary))" opacity="0.8" />
+          <circle cx="50" cy="26" r="1" fill="hsl(var(--database-accent))" opacity="0.8" />
+          
+          <circle cx="32" cy="50" r="1" fill="hsl(var(--database-primary))" opacity="0.8" />
+          <circle cx="40" cy="52" r="1" fill="hsl(var(--database-secondary))" opacity="0.8" />
+          <circle cx="48" cy="51" r="1" fill="hsl(var(--database-accent))" opacity="0.8" />
           
           {/* Database label */}
           <text 
@@ -104,8 +114,9 @@ export class DatabaseShapeUtil extends BaseBoxShapeUtil<DatabaseShape> {
             y="96" 
             textAnchor="middle" 
             fontSize="8" 
-            fill="currentColor"
+            fill="hsl(var(--database-primary))"
             fontFamily="system-ui, sans-serif"
+            fontWeight="bold"
           >
             Database
           </text>
