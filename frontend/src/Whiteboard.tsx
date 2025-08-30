@@ -80,6 +80,7 @@ export default function Whiteboard() {
 
       {/* tldraw Canvas */}
       <Tldraw 
+        shapeUtils={[DatabaseShapeUtil, ServerShapeUtil, UserShapeUtil, LLMShapeUtil]}
         onMount={(editor) => {
           // Provide editor to hooks
           setEditorOpenAI(editor)

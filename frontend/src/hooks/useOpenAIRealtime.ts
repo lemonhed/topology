@@ -87,32 +87,38 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
       // Whiteboard tools
       const drawItem = tool({
         name: 'draw_item',
-        description: 'Draw an item on the canvas. Allowed item types: database, person',
+        description: 'Draw an item on the canvas. Allowed item types: database, person, server, llm',
         parameters: z.object({
-          item_type: z.enum(['database', 'person']),
+          item_type: z.enum(['database', 'person', 'server', 'llm']),
         }),
-        execute: async ({ item_type }: { item_type: 'database' | 'person' }) => {
+        execute: async ({ item_type }: { item_type: 'database' | 'person' | 'server' | 'llm' }) => {
           const editor = editorRef.current
           if (!editor) throw new Error('Editor not initialised')
 
           const uuid = (globalThis as any).crypto?.randomUUID?.() || `${Date.now()}_${Math.random().toString(36).slice(2)}`
           const shapeId = `shape:${uuid}`
-          const isPerson = item_type === 'person'
+          
+          // Map item types to custom shape types
+          const shapeTypeMap = {
+            'database': 'database',
+            'person': 'user', 
+            'server': 'server',
+            'llm': 'llm'
+          }
+          
           const shape = {
             id: shapeId,
-            type: 'geo',
-            x: 200,
-            y: 150,
+            type: shapeTypeMap[item_type],
+            x: Math.random() * 400 + 100, // Random positioning to avoid overlap
+            y: Math.random() * 300 + 100,
             props: {
-              geo: isPerson ? 'ellipse' : 'ellipse',
-              w: isPerson ? 80 : 120,
-              h: isPerson ? 80 : 80,
-              fill: 'solid',
-              color: isPerson ? 'orange' : 'blue',
-              text: isPerson ? 'person' : 'database',
+              w: item_type === 'person' ? 60 : item_type === 'database' ? 80 : item_type === 'llm' ? 100 : 120,
+              h: item_type === 'person' ? 80 : item_type === 'database' ? 100 : 80,
+              color: item_type === 'database' ? 'green' : item_type === 'person' ? 'blue' : item_type === 'server' ? 'gray' : 'purple',
             },
           }
           editor.createShapes([shape])
+          console.log(`Drew ${item_type} with UUID: ${uuid}`)
           return uuid
         },
       })
