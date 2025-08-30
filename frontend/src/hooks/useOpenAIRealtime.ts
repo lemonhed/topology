@@ -27,8 +27,11 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
   const sessionRef = useRef<RealtimeSession | null>(null)
   const editorRef = useRef<any>(null)
 
+
+
+
   const SYSTEM_PROMPT =
-    'Only use English for responses. You control a whiteboard. Interpret spoken instructions as immediate tool calls. ' +
+    'You are Rubber Ducky Bot. The user is discussing how their system architecture will look. You are mainly tasked with sitting there and listening. When they have mentioned an item that you\'re able to draw, draw it using the tool. If they go on a longwinded rant about the different components of their system, write a that on the side, using dashes as bullet points. It will be a briefer version of what they want. Be brief and concise, but kind and friendly. Interpret spoken instructions as immediate tool calls. If they describe what their product is going to be at a high level, also add text that explains that with bullet points.' +
     'Do not wait for full sentences if a coherent unit of action is clear. ' +
     'Allowed item types: database, person, server, llm. Return UUIDs from draw_item and reuse them.' +
     'Don\'t be too chatty. Just do what the user asks for, with brief responses.'
@@ -97,11 +100,13 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
       // Whiteboard tools
       const drawItem = tool({
         name: 'draw_item',
-        description: 'Draw an item on the canvas. Allowed item types: database, person, server, llm',
+        description: 'Draw an item on the canvas. Coordinates are in pixels from top-left. Canvas is roughly 1000x600.',
         parameters: z.object({
           item_type: z.enum(['database', 'person', 'server', 'llm']),
+          x: z.number().describe('X coordinate in pixels'),
+          y: z.number().describe('Y coordinate in pixels'),
         }),
-        execute: async ({ item_type }: { item_type: 'database' | 'person' | 'server' | 'llm' }) => {
+        execute: async ({ item_type, x, y }: { item_type: 'database' | 'person' | 'server' | 'llm', x: number, y: number }) => {
           const editor = editorRef.current
           if (!editor) throw new Error('Editor not initialised')
 
@@ -119,8 +124,8 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
           const shape = {
             id: shapeId,
             type: shapeTypeMap[item_type],
-            x: Math.random() * 400 + 100, // Random positioning to avoid overlap
-            y: Math.random() * 300 + 100,
+            x,
+            y,
             props: {
               w: item_type === 'person' ? 60 : item_type === 'database' ? 80 : item_type === 'llm' ? 100 : 120,
               h: item_type === 'person' ? 80 : item_type === 'database' ? 100 : 80,
@@ -191,11 +196,13 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
 
       const addText = tool({
         name: 'add_text',
-        description: 'Add text to the whiteboard',
+        description: 'Add text to the whiteboard. Coordinates are in pixels from top-left. Canvas is roughly 1000x600.',
         parameters: z.object({
           text: z.string(),
+          x: z.number().describe('X coordinate in pixels'),
+          y: z.number().describe('Y coordinate in pixels'),
         }),
-        execute: async ({ text }: { text: string }) => {
+        execute: async ({ text, x, y }: { text: string, x: number, y: number }) => {
           const editor = editorRef.current
           if (!editor) throw new Error('Editor not initialised')
 
@@ -203,11 +210,11 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
           const shape = {
             id: `shape:${uuid}`,
             type: 'text',
-            x: Math.random() * 400 + 100,
-            y: Math.random() * 300 + 100,
+            x,
+            y,
             props: {
               text,
-              size: 'm',
+              size: 's',
               color: 'black',
             },
           }
