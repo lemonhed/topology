@@ -1,5 +1,18 @@
 # Speech-to-Whiteboard Drawing
 
+make key:
+```
+curl -X POST https://api.openai.com/v1/realtime/client_secrets \
+                               -H "Authorization: Bearer sk-proj-whatever" \
+                               -H "Content-Type: application/json" \
+                               -d '{
+                             "session": {
+                               "type": "realtime",
+                               "model": "gpt-realtime"
+                             }
+                           }'
+                           ```
+
 A real-time hackathon project that converts speech into whiteboard drawings using OpenAI's real-time API and tldraw.
 
 ## 🎯 Project Vision
