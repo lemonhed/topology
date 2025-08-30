@@ -37,9 +37,9 @@ class WhiteboardVoicePipeline:
                 if event.type == "voice_stream_event_audio":
                     player.write(event.data)
                 elif event.type == "voice_stream_event_lifecycle":
-                    print(f"[Voice] Lifecycle event: {event.name}")
+                    print(f"[Voice] Lifecycle event: {event}")
                 elif event.type == "voice_stream_event_error":
-                    print(f"[Voice] Error: {event.error}")
+                    print(f"[Voice] Error: {event}")
         finally:
             player.stop()
             player.close()
