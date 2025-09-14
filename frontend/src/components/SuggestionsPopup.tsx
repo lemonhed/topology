@@ -4,7 +4,7 @@ interface ArchitectureSuggestion {
   id: string
   title: string
   description: string
-  component_type: 'database' | 'person' | 'server' | 'llm' | 'frontend'
+  component_type: 'database' | 'person' | 'server' | 'gpt_5' | 'frontend' | 'gpt_realtime'
   reasoning: string
 }
 
@@ -26,10 +26,12 @@ const getComponentIcon = (type: string) => {
       return '👤'
     case 'server':
       return '🖥️'
-    case 'llm':
+    case 'gpt_5':
       return '🤖'
     case 'frontend':
       return '🖥️'
+    case 'gpt_realtime':
+      return '🎤'
     default:
       return '📦'
   }
@@ -43,8 +45,10 @@ const getComponentColor = (type: string) => {
       return '#3b82f6' // blue
     case 'server':
       return '#6b7280' // gray
-    case 'llm':
+    case 'gpt_5':
       return '#8b5cf6' // purple
+    case 'gpt_realtime':
+      return '#3b82f6' // blue
     default:
       return '#64748b'
   }

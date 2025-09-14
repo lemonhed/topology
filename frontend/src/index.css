@@ -35,7 +35,7 @@ body {
   --llm-accent: 271 64% 61%;          /* Darker purple */
 
   /* Frontend colors */
-  --frontend-primary: 271 64% 71%;         /* Purple */
-  --frontend-secondary: 271 64% 81%;       /* Lighter purple */
-  --frontend-accent: 271 64% 61%;          /* Darker purple */
+  --frontend-primary: 0 85% 60%;           /* Red */
+  --frontend-secondary: 0 85% 70%;         /* Lighter red */
+  --frontend-accent: 0 85% 50%;            /* Darker red */
 }

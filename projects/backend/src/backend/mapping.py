@@ -21,33 +21,49 @@ def get_shape_definition(item_type: str, unique_name: str, position: tuple[float
         "database": {
             "type": "database",
             "props": {
-                "w": 80,
-                "h": 100,
+                "w": 160,
+                "h": 200,
                 "color": "green"
             }
         },
         "server": {
             "type": "server", 
             "props": {
-                "w": 120,
-                "h": 80,
+                "w": 240,
+                "h": 160,
                 "color": "gray"
             }
         },
         "user": {
             "type": "user", 
             "props": {
-                "w": 60,
-                "h": 80,
+                "w": 120,
+                "h": 160,
                 "color": "blue"
             }
         },
-        "llm": {
+        "gpt_5": {
             "type": "llm",
             "props": {
-                "w": 100,
-                "h": 80,
+                "w": 200,
+                "h": 160,
                 "color": "purple"
+            }
+        },
+        "frontend": {
+            "type": "frontend",
+            "props": {
+                "w": 180,
+                "h": 140,
+                "color": "red"
+            }
+        },
+        "gpt_realtime": {
+            "type": "gpt_realtime",
+            "props": {
+                "w": 220,
+                "h": 120,
+                "color": "blue"
             }
         }
     }

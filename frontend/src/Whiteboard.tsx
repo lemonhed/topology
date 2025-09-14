@@ -7,6 +7,7 @@ import { ServerShapeUtil } from './components/ui/ServerShape'
 import { UserShapeUtil } from './components/ui/UserShape'
 import { LLMShapeUtil } from './components/ui/LLMShape'
 import { FrontendShapeUtil } from './components/ui/FrontendShape'
+import { GPTRealtimeShapeUtil } from './components/ui/GPTRealtimeShape'
 import { SuggestionsPopup } from './components/SuggestionsPopup'
 import { useRef, useCallback, useEffect, useState } from 'react'
 
@@ -59,7 +60,7 @@ export default function Whiteboard() {
       const hh = (s.props?.h ?? 0) / 2
       
       const shapeType = s.type
-      if (shapeType === 'server') {
+      if (shapeType === 'server' || shapeType === 'gpt_realtime') {
         return edgePointRect(c, hw, hh, toward)
       } else if (shapeType === 'database' || shapeType === 'user' || shapeType === 'llm' || shapeType === 'frontend') {
         return edgePointEllipse(c, hw, hh, toward)
@@ -75,8 +76,9 @@ export default function Whiteboard() {
       'database': 'database',
       'person': 'user', 
       'server': 'server',
-      'llm': 'llm',
+      'gpt_5': 'llm',
       'frontend': 'frontend',
+      'gpt_realtime': 'gpt_realtime',
     }
     
     const shape = {
@@ -85,9 +87,9 @@ export default function Whiteboard() {
       x: Math.random() * 400 + 100,
       y: Math.random() * 300 + 100,
       props: {
-        w: suggestion.component_type === 'person' ? 60 : suggestion.component_type === 'database' ? 80 : suggestion.component_type === 'llm' ? 100 : 120,
-        h: suggestion.component_type === 'person' ? 80 : suggestion.component_type === 'database' ? 100 : 80,
-        color: suggestion.component_type === 'database' ? 'green' : suggestion.component_type === 'person' ? 'blue' : suggestion.component_type === 'server' ? 'gray' : 'purple',
+        w: suggestion.component_type === 'person' ? 120 : suggestion.component_type === 'database' ? 160 : suggestion.component_type === 'gpt_5' ? 200 : suggestion.component_type === 'frontend' ? 180 : suggestion.component_type === 'gpt_realtime' ? 220 : 240,
+        h: suggestion.component_type === 'person' ? 140 : suggestion.component_type === 'database' ? 200 : suggestion.component_type === 'gpt_5' ? 160 : suggestion.component_type === 'frontend' ? 140 : suggestion.component_type === 'gpt_realtime' ? 120 : 160,
+        color: suggestion.component_type === 'database' ? 'green' : suggestion.component_type === 'person' ? 'blue' : suggestion.component_type === 'server' ? 'gray' : suggestion.component_type === 'frontend' ? 'red' : suggestion.component_type === 'gpt_realtime' ? 'blue' : 'purple',
       },
     }
     
@@ -184,7 +186,7 @@ export default function Whiteboard() {
     setTimeout(() => {
       console.log('Running analysis after component addition')
       architectureAnalysis.analyzeDiagram()
-    }, 1500)
+    }, 10000)
   }, [architectureAnalysis.dismissSuggestion, architectureAnalysis.analyzeDiagram])
 
   return (
@@ -256,7 +258,7 @@ export default function Whiteboard() {
 
       {/* tldraw Canvas */}
       <Tldraw 
-        shapeUtils={[DatabaseShapeUtil, ServerShapeUtil, UserShapeUtil, LLMShapeUtil, FrontendShapeUtil]}
+        shapeUtils={[DatabaseShapeUtil, ServerShapeUtil, UserShapeUtil, LLMShapeUtil, FrontendShapeUtil, GPTRealtimeShapeUtil]}
         onMount={(editor) => {
           // Provide editor to hooks
           setEditorOpenAI(editor)
@@ -271,7 +273,7 @@ export default function Whiteboard() {
             console.log('🎯 New shape created:', shape.type, shape.id)
             
             // Only trigger analysis for our custom component types, not arrows
-            if (['database', 'user', 'server', 'llm', 'frontend'].includes(shape.type)) {
+            if (['database', 'user', 'server', 'llm', 'frontend', 'gpt_realtime'].includes(shape.type)) {
               console.log('🎯 Component added, queuing analysis in 10 seconds...')
               setTimeout(() => {
                 console.log('🎯 Running analysis after component addition via voice')

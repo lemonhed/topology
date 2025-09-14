@@ -17,9 +17,9 @@ export class FrontendShapeUtil extends BaseBoxShapeUtil<FrontendShape> {
   // Default props for the shape
   getDefaultProps(): FrontendShape['props'] {
     return {
-      w: 90,
-      h: 70,
-      color: 'purple'
+      w: 180,
+      h: 140,
+      color: 'red'
     }
   }
 
@@ -37,114 +37,156 @@ export class FrontendShapeUtil extends BaseBoxShapeUtil<FrontendShape> {
         <svg
           width={bounds.width}
           height={bounds.height}
-          viewBox="0 0 90 70"
+          viewBox="0 0 180 140"
           style={{ 
             overflow: 'visible',
             pointerEvents: 'none'
           }}
         >
-          {/* Browser window frame */}
+          {/* Modern browser window frame */}
           <rect
-            x="5"
-            y="10"
-            width="80"
-            height="50"
+            x="10"
+            y="20"
+            width="160"
+            height="100"
+            fill="white"
+            stroke="hsl(var(--frontend-primary))"
+            strokeWidth="2"
+            rx="8"
+          />
+          
+          {/* Subtle shadow for depth */}
+          <rect
+            x="12"
+            y="22"
+            width="160"
+            height="100"
+            fill="hsl(var(--frontend-primary) / 0.03)"
+            stroke="none"
+            rx="8"
+          />
+          
+          {/* Modern top bar */}
+          <rect
+            x="10"
+            y="20"
+            width="160"
+            height="24"
+            fill="hsl(var(--frontend-primary) / 0.08)"
+            stroke="hsl(var(--frontend-primary))"
+            strokeWidth="2"
+            rx="8"
+          />
+          
+          {/* Top bar separator line */}
+          <line
+            x1="10"
+            y1="44"
+            x2="170"
+            y2="44"
+            stroke="hsl(var(--frontend-primary) / 0.15)"
+            strokeWidth="1"
+          />
+          
+          {/* Modern traffic light buttons */}
+          <circle cx="22" cy="32" r="3" fill="hsl(0 70% 65%)" opacity="0.9" />
+          <circle cx="34" cy="32" r="3" fill="hsl(45 80% 60%)" opacity="0.9" />
+          <circle cx="46" cy="32" r="3" fill="hsl(120 50% 55%)" opacity="0.9" />
+          
+          {/* Modern address bar */}
+          <rect
+            x="58"
+            y="27"
+            width="105"
+            height="10"
             fill="hsl(var(--frontend-primary) / 0.05)"
-            stroke="hsl(var(--frontend-primary))"
-            strokeWidth="2"
-            rx="4"
+            stroke="hsl(var(--frontend-primary) / 0.2)"
+            strokeWidth="1"
+            rx="5"
           />
           
-          {/* Browser top bar */}
+          {/* Address bar content indicator */}
           <rect
-            x="5"
-            y="10"
-            width="80"
+            x="62"
+            y="30"
+            width="60"
+            height="4"
+            fill="hsl(var(--frontend-primary) / 0.15)"
+            rx="2"
+          />
+          
+          {/* Header content area */}
+          <rect
+            x="18"
+            y="52"
+            width="144"
             height="12"
-            fill="hsl(var(--frontend-secondary) / 0.3)"
-            stroke="hsl(var(--frontend-primary))"
-            strokeWidth="2"
-            rx="4"
+            fill="hsl(var(--frontend-primary) / 0.06)"
+            stroke="none"
+            rx="3"
           />
           
-          {/* Traffic light buttons */}
-          <circle cx="12" cy="16" r="2" fill="hsl(0 80% 60%)" />
-          <circle cx="19" cy="16" r="2" fill="hsl(45 90% 55%)" />
-          <circle cx="26" cy="16" r="2" fill="hsl(120 60% 50%)" />
+          {/* Header content lines */}
+          <rect x="24" y="56" width="80" height="2" fill="hsl(var(--frontend-primary) / 0.2)" rx="1" />
+          <rect x="24" y="59" width="60" height="2" fill="hsl(var(--frontend-primary) / 0.15)" rx="1" />
           
-          {/* Address bar */}
+          {/* Sidebar */}
           <rect
-            x="35"
-            y="13"
-            width="45"
-            height="6"
-            fill="hsl(var(--frontend-primary) / 0.1)"
-            stroke="hsl(var(--frontend-accent))"
+            x="18"
+            y="70"
+            width="36"
+            height="42"
+            fill="hsl(var(--frontend-primary) / 0.04)"
+            stroke="hsl(var(--frontend-primary) / 0.1)"
             strokeWidth="1"
             rx="3"
           />
           
-          {/* Content area with layout blocks */}
+          {/* Main content area */}
           <rect
-            x="10"
-            y="26"
-            width="70"
-            height="8"
-            fill="hsl(var(--frontend-accent) / 0.2)"
-            stroke="hsl(var(--frontend-accent))"
+            x="60"
+            y="70"
+            width="102"
+            height="42"
+            fill="white"
+            stroke="hsl(var(--frontend-primary) / 0.1)"
             strokeWidth="1"
-            rx="2"
+            rx="3"
           />
           
-          {/* Content columns */}
-          <rect
-            x="10"
-            y="38"
-            width="20"
-            height="18"
-            fill="hsl(var(--frontend-secondary) / 0.2)"
-            stroke="hsl(var(--frontend-secondary))"
-            strokeWidth="1"
-            rx="2"
-          />
+          {/* Sidebar navigation items */}
+          <rect x="22" y="76" width="28" height="3" fill="hsl(var(--frontend-primary) / 0.2)" rx="1" />
+          <rect x="22" y="82" width="24" height="3" fill="hsl(var(--frontend-primary) / 0.15)" rx="1" />
+          <rect x="22" y="88" width="26" height="3" fill="hsl(var(--frontend-primary) / 0.15)" rx="1" />
+          <rect x="22" y="94" width="22" height="3" fill="hsl(var(--frontend-primary) / 0.15)" rx="1" />
           
-          <rect
-            x="35"
-            y="38"
-            width="45"
-            height="18"
-            fill="hsl(var(--frontend-primary) / 0.1)"
-            stroke="hsl(var(--frontend-primary))"
-            strokeWidth="1"
-            rx="2"
-          />
+          {/* Main content elements */}
+          <rect x="66" y="76" width="60" height="4" fill="hsl(var(--frontend-primary) / 0.2)" rx="2" />
+          <rect x="66" y="84" width="80" height="3" fill="hsl(var(--frontend-primary) / 0.1)" rx="1" />
+          <rect x="66" y="90" width="75" height="3" fill="hsl(var(--frontend-primary) / 0.1)" rx="1" />
+          <rect x="66" y="96" width="65" height="3" fill="hsl(var(--frontend-primary) / 0.1)" rx="1" />
           
-          {/* Interactive elements */}
-          <circle cx="15" cy="42" r="1.5" fill="hsl(var(--frontend-accent))" />
-          <rect x="12" y="46" width="14" height="2" fill="hsl(var(--frontend-secondary))" rx="1" />
-          <rect x="12" y="49" width="10" height="2" fill="hsl(var(--frontend-secondary))" rx="1" />
-          
-          {/* Button in main content */}
+          {/* Call-to-action button */}
           <rect
-            x="40"
-            y="50"
-            width="15"
-            height="4"
-            fill="hsl(var(--frontend-primary) / 0.3)"
-            stroke="hsl(var(--frontend-primary))"
+            x="130"
+            y="102"
+            width="24"
+            height="6"
+            fill="hsl(var(--frontend-primary) / 0.15)"
+            stroke="hsl(var(--frontend-primary) / 0.3)"
             strokeWidth="1"
-            rx="2"
+            rx="3"
           />
           
           {/* Frontend label */}
           <text 
-            x="45" 
-            y="68" 
+            x="90" 
+            y="134" 
             textAnchor="middle" 
-            fontSize="8" 
+            fontSize="13" 
             fill="hsl(var(--frontend-primary))"
-            fontFamily="system-ui, sans-serif"
-            fontWeight="bold"
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fontWeight="500"
           >
             Frontend
           </text>

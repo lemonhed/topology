@@ -31,10 +31,11 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
 
 
   const SYSTEM_PROMPT =
-    'You are Rubber Ducky Bot. The user is discussing how their system architecture will look. You are mainly tasked with sitting there and listening. When they have mentioned an item that you\'re able to draw, draw it using the tool. If they go on a longwinded rant about the different components of their system, write a that on the side, using dashes as bullet points. It will be a briefer version of what they want. Be brief and concise, but kind and friendly. Interpret spoken instructions as immediate tool calls. If they describe what their product is going to be at a high level, also add text that explains that with bullet points.' +
+    'You are Rubber Ducky Bot. The user is discussing how their system architecture will look. You are mainly tasked with sitting there and listening. When they have mentioned an item that you\'re able to draw, draw it using the tool. If they go on a longwinded rant about the different components of their system, write that on the side, using dashes as bullet points. It will be a briefer version of what they want. Be brief and concise, but kind and friendly. Interpret spoken instructions as immediate tool calls. If they describe what their product is going to be at a high level, also add text that explains that with bullet points.' +
     'Do not wait for full sentences if a coherent unit of action is clear. ' +
-    'Allowed item types: database, person, server, llm, frontend. Return UUIDs from draw_item and reuse them.' +
-    'Don\'t be too chatty. Just do what the user asks for, with brief responses.'
+    'Allowed item types: database, person, server, gpt_5, frontend, gpt_realtime. Return UUIDs from draw_item and reuse them.' +
+    'Don\'t be too chatty. Just do what the user asks for, with brief responses.' + 
+    'IMPORTANT: When drawing items, add ample space between the objects.'
 
   const connectRealtime = useCallback(async () => {
     const apiKey = token.trim()
@@ -85,11 +86,11 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
         
         // Use shape type to determine geometry
         const shapeType = s.type
-        if (shapeType === 'server') {
-          // Server is rectangular
+        if (shapeType === 'server' || shapeType === 'gpt_realtime') {
+          // Server and GPT Realtime are rectangular
           return edgePointRect(c, hw, hh, toward)
         } else if (shapeType === 'database' || shapeType === 'user' || shapeType === 'llm') {
-          // Database, user, and LLM are more circular/elliptical
+          // Database, user, and GPT-5 (llm shape) are more circular/elliptical
           return edgePointEllipse(c, hw, hh, toward)
         }
         
@@ -100,13 +101,13 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
       // Whiteboard tools
       const drawItem = tool({
         name: 'draw_item',
-        description: 'Draw an item on the canvas. Coordinates are in pixels from top-left. Canvas is roughly 1000x600.',
+        description: 'Draw an item on the canvas. Coordinates are in pixels from top-left. Canvas is roughly 1500x1000.',
         parameters: z.object({
-          item_type: z.enum(['database', 'person', 'server', 'llm', 'frontend']),
+          item_type: z.enum(['database', 'person', 'server', 'gpt_5', 'frontend', 'gpt_realtime']),
           x: z.number().describe('X coordinate in pixels'),
           y: z.number().describe('Y coordinate in pixels'),
         }),
-        execute: async ({ item_type, x, y }: { item_type: 'database' | 'person' | 'server' | 'llm' | 'frontend', x: number, y: number }) => {
+        execute: async ({ item_type, x, y }: { item_type: 'database' | 'person' | 'server' | 'gpt_5' | 'frontend' | 'gpt_realtime', x: number, y: number }) => {
           const editor = editorRef.current
           if (!editor) throw new Error('Editor not initialised')
 
@@ -118,8 +119,9 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
             'database': 'database',
             'person': 'user', 
             'server': 'server',
-            'llm': 'llm',
+            'gpt_5': 'llm',
             'frontend': 'frontend',
+            'gpt_realtime': 'gpt_realtime',
           }
           
           const shape = {
@@ -128,9 +130,9 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
             x,
             y,
             props: {
-              w: item_type === 'person' ? 60 : item_type === 'database' ? 80 : item_type === 'llm' ? 100 : 120,
-              h: item_type === 'person' ? 80 : item_type === 'database' ? 100 : 80,
-              color: item_type === 'database' ? 'green' : item_type === 'person' ? 'blue' : item_type === 'server' ? 'gray' : 'purple',
+              w: item_type === 'person' ? 120 : item_type === 'database' ? 160 : item_type === 'gpt_5' ? 200 : item_type === 'frontend' ? 180 : item_type === 'gpt_realtime' ? 220 : 240,
+              h: item_type === 'person' ? 140 : item_type === 'database' ? 200 : item_type === 'gpt_5' ? 160 : item_type === 'frontend' ? 140 : item_type === 'gpt_realtime' ? 120 : 160,
+              color: item_type === 'database' ? 'green' : item_type === 'person' ? 'blue' : item_type === 'server' ? 'gray' : item_type === 'frontend' ? 'red' : item_type === 'gpt_realtime' ? 'blue' : 'purple',
             },
           }
           editor.createShapes([shape])
@@ -141,12 +143,13 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
 
       const connectItems = tool({
         name: 'connect',
-        description: 'Connect two items by their UUIDs with an arrow',
+        description: 'Connect two items by their UUIDs with an arrow. Use direction to control arrow flow: "one_way" creates a single directional arrow from item1 to item2 (default), "two_way" creates a bidirectional arrow between the items to avoid overlapping arrows.',
         parameters: z.object({
           item1_uuid: z.string(),
           item2_uuid: z.string(),
+          direction: z.enum(['one_way', 'two_way']).default('one_way').describe('Arrow direction: one_way (default) or two_way for bidirectional'),
         }),
-        execute: async ({ item1_uuid, item2_uuid }: { item1_uuid: string; item2_uuid: string }) => {
+        execute: async ({ item1_uuid, item2_uuid, direction = 'one_way' }: { item1_uuid: string; item2_uuid: string; direction?: 'one_way' | 'two_way' }) => {
           const editor = editorRef.current
           if (!editor) throw new Error('Editor not initialised')
 
@@ -161,50 +164,99 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
           const start = edgePoint(a, cb)
           const end = edgePoint(b, ca)
 
-          const arrowId = `shape:connection_${item1_uuid}_${item2_uuid}`
-          
-          // Create the arrow shape
-          editor.createShapes([
-            {
-              id: arrowId,
-              type: 'arrow',
-              props: {
-                start,
-                end,
-                bend: 0,
-                color: 'black',
-                size: 'm',
+          if (direction === 'two_way') {
+            // Create a bidirectional arrow
+            const arrowId = `shape:bidirectional_${item1_uuid}_${item2_uuid}`
+            
+            editor.createShapes([
+              {
+                id: arrowId,
+                type: 'arrow',
+                props: {
+                  start,
+                  end,
+                  bend: 0,
+                  color: 'black',
+                  size: 'm',
+                  arrowheadStart: 'arrow',
+                  arrowheadEnd: 'arrow',
+                },
               },
-            },
-          ])
+            ])
 
-          // Create bindings to make the arrow stick to the shapes
-          editor.createBindings([
-            {
-              id: `binding:${arrowId}_start`,
-              type: 'arrow',
-              fromId: arrowId,
-              toId: `shape:${item1_uuid}`,
-              props: {
-                terminal: 'start',
-                isPrecise: false,
-                isExact: false,
-                normalizedAnchor: { x: 0.5, y: 0.5 }
+            // Create bindings for bidirectional arrow
+            editor.createBindings([
+              {
+                id: `binding:${arrowId}_start`,
+                type: 'arrow',
+                fromId: arrowId,
+                toId: `shape:${item1_uuid}`,
+                props: {
+                  terminal: 'start',
+                  isPrecise: false,
+                  isExact: false,
+                  normalizedAnchor: { x: 0.5, y: 0.5 }
+                }
+              },
+              {
+                id: `binding:${arrowId}_end`, 
+                type: 'arrow',
+                fromId: arrowId,
+                toId: `shape:${item2_uuid}`,
+                props: {
+                  terminal: 'end',
+                  isPrecise: false,
+                  isExact: false,
+                  normalizedAnchor: { x: 0.5, y: 0.5 }
+                }
               }
-            },
-            {
-              id: `binding:${arrowId}_end`, 
-              type: 'arrow',
-              fromId: arrowId,
-              toId: `shape:${item2_uuid}`,
-              props: {
-                terminal: 'end',
-                isPrecise: false,
-                isExact: false,
-                normalizedAnchor: { x: 0.5, y: 0.5 }
+            ])
+          } else {
+            // Create a one-way arrow (default)
+            const arrowId = `shape:connection_${item1_uuid}_${item2_uuid}`
+            
+            editor.createShapes([
+              {
+                id: arrowId,
+                type: 'arrow',
+                props: {
+                  start,
+                  end,
+                  bend: 0,
+                  color: 'black',
+                  size: 'm',
+                },
+              },
+            ])
+
+            // Create bindings for one-way arrow
+            editor.createBindings([
+              {
+                id: `binding:${arrowId}_start`,
+                type: 'arrow',
+                fromId: arrowId,
+                toId: `shape:${item1_uuid}`,
+                props: {
+                  terminal: 'start',
+                  isPrecise: false,
+                  isExact: false,
+                  normalizedAnchor: { x: 0.5, y: 0.5 }
+                }
+              },
+              {
+                id: `binding:${arrowId}_end`, 
+                type: 'arrow',
+                fromId: arrowId,
+                toId: `shape:${item2_uuid}`,
+                props: {
+                  terminal: 'end',
+                  isPrecise: false,
+                  isExact: false,
+                  normalizedAnchor: { x: 0.5, y: 0.5 }
+                }
               }
-            }
-          ])
+            ])
+          }
           return 'ok'
         },
       })
@@ -227,7 +279,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
 
       const addText = tool({
         name: 'add_text',
-        description: 'Add text to the whiteboard. Coordinates are in pixels from top-left. Canvas is roughly 1000x600.',
+        description: 'Add text to the whiteboard. Coordinates are in pixels from top-left. Canvas is roughly 1500x1000.',
         parameters: z.object({
           text: z.string(),
           x: z.number().describe('X coordinate in pixels'),

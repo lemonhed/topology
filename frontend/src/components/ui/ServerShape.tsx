@@ -17,8 +17,8 @@ export class ServerShapeUtil extends BaseBoxShapeUtil<ServerShape> {
   // Default props for the shape
   getDefaultProps(): ServerShape['props'] {
     return {
-      w: 120,
-      h: 80,
+      w: 240,
+      h: 160,
       color: 'gray'
     }
   }
@@ -37,7 +37,7 @@ export class ServerShapeUtil extends BaseBoxShapeUtil<ServerShape> {
         <svg
           width={bounds.width}
           height={bounds.height}
-          viewBox="0 0 120 80"
+          viewBox="0 0 240 160"
           style={{ 
             overflow: 'visible',
             pointerEvents: 'none'
@@ -47,78 +47,78 @@ export class ServerShapeUtil extends BaseBoxShapeUtil<ServerShape> {
           
           {/* Front face */}
           <rect
-            x="15"
-            y="25"
-            width="70"
-            height="40"
+            x="30"
+            y="50"
+            width="140"
+            height="80"
             fill="hsl(var(--server-primary) / 0.1)"
             stroke="hsl(var(--server-primary))"
-            strokeWidth="2"
+            strokeWidth="3"
           />
           
           {/* Top face (parallelogram for 3D effect) */}
           <path
-            d="M15 25 L25 15 L95 15 L85 25 Z"
+            d="M30 50 L50 30 L190 30 L170 50 Z"
             fill="hsl(var(--server-secondary) / 0.2)"
             stroke="hsl(var(--server-secondary))"
-            strokeWidth="2"
+            strokeWidth="3"
           />
           
           {/* Right side face (parallelogram for 3D effect) */}
           <path
-            d="M85 25 L95 15 L95 55 L85 65 Z"
+            d="M170 50 L190 30 L190 110 L170 130 Z"
             fill="hsl(var(--server-secondary) / 0.15)"
             stroke="hsl(var(--server-secondary))"
-            strokeWidth="2"
+            strokeWidth="3"
           />
           
           {/* Server details - front panel */}
           <rect
-            x="20"
-            y="30"
-            width="60"
-            height="8"
+            x="40"
+            y="60"
+            width="120"
+            height="16"
             fill="hsl(var(--server-accent) / 0.3)"
             stroke="hsl(var(--server-primary))"
-            strokeWidth="1"
+            strokeWidth="2"
           />
           
           <rect
-            x="20"
-            y="42"
-            width="60"
-            height="8"
+            x="40"
+            y="84"
+            width="120"
+            height="16"
             fill="hsl(var(--server-accent) / 0.3)"
             stroke="hsl(var(--server-primary))"
-            strokeWidth="1"
+            strokeWidth="2"
           />
           
           <rect
-            x="20"
-            y="54"
-            width="60"
-            height="8"
+            x="40"
+            y="108"
+            width="120"
+            height="16"
             fill="hsl(var(--server-accent) / 0.3)"
             stroke="hsl(var(--server-primary))"
-            strokeWidth="1"
+            strokeWidth="2"
           />
           
           {/* Power indicators */}
-          <circle cx="25" cy="34" r="1.5" fill="hsl(var(--server-secondary))" />
-          <circle cx="25" cy="46" r="1.5" fill="hsl(var(--server-secondary))" />
-          <circle cx="25" cy="58" r="1.5" fill="hsl(var(--server-secondary))" />
+          <circle cx="50" cy="68" r="3" fill="hsl(var(--server-secondary))" />
+          <circle cx="50" cy="92" r="3" fill="hsl(var(--server-secondary))" />
+          <circle cx="50" cy="116" r="3" fill="hsl(var(--server-secondary))" />
           
           {/* Vents on right side */}
-          <line x1="88" y1="20" x2="88" y2="50" stroke="hsl(var(--server-secondary))" strokeWidth="1" opacity="0.8" />
-          <line x1="90" y1="22" x2="90" y2="48" stroke="hsl(var(--server-secondary))" strokeWidth="1" opacity="0.8" />
-          <line x1="92" y1="24" x2="92" y2="46" stroke="hsl(var(--server-secondary))" strokeWidth="1" opacity="0.8" />
+          <line x1="176" y1="40" x2="176" y2="100" stroke="hsl(var(--server-secondary))" strokeWidth="2" opacity="0.8" />
+          <line x1="180" y1="44" x2="180" y2="96" stroke="hsl(var(--server-secondary))" strokeWidth="2" opacity="0.8" />
+          <line x1="184" y1="48" x2="184" y2="92" stroke="hsl(var(--server-secondary))" strokeWidth="2" opacity="0.8" />
           
           {/* Server label */}
           <text 
-            x="60" 
-            y="76" 
+            x="120" 
+            y="152" 
             textAnchor="middle" 
-            fontSize="9" 
+            fontSize="16" 
             fill="hsl(var(--server-primary))"
             fontFamily="system-ui, sans-serif"
             fontWeight="bold"

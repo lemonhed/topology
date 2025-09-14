@@ -17,8 +17,8 @@ export class DatabaseShapeUtil extends BaseBoxShapeUtil<DatabaseShape> {
   // Default props for the shape
   getDefaultProps(): DatabaseShape['props'] {
     return {
-      w: 80,
-      h: 100,
+      w: 160,
+      h: 200,
       color: 'green'
     }
   }
@@ -37,7 +37,7 @@ export class DatabaseShapeUtil extends BaseBoxShapeUtil<DatabaseShape> {
         <svg
           width={bounds.width}
           height={bounds.height}
-          viewBox="0 0 80 100"
+          viewBox="0 0 160 200"
           style={{ 
             overflow: 'visible',
             pointerEvents: 'none'
@@ -45,75 +45,75 @@ export class DatabaseShapeUtil extends BaseBoxShapeUtil<DatabaseShape> {
         >
           {/* Database cylinder body */}
           <rect
-            x="20"
-            y="15"
-            width="40"
-            height="70"
+            x="40"
+            y="30"
+            width="80"
+            height="140"
             fill="hsl(var(--database-primary) / 0.05)"
             stroke="hsl(var(--database-primary))"
-            strokeWidth="2"
+            strokeWidth="3"
           />
           
           {/* Top disk (ellipse) */}
           <ellipse
-            cx="40"
-            cy="15"
-            rx="20"
-            ry="6"
+            cx="80"
+            cy="30"
+            rx="40"
+            ry="12"
             fill="hsl(var(--database-primary) / 0.3)"
             stroke="hsl(var(--database-primary))"
-            strokeWidth="2"
+            strokeWidth="3"
           />
           
           {/* Middle disk */}
           <ellipse
-            cx="40"
-            cy="40"
-            rx="20"
-            ry="6"
+            cx="80"
+            cy="80"
+            rx="40"
+            ry="12"
             fill="hsl(var(--database-secondary) / 0.3)"
             stroke="hsl(var(--database-secondary))"
-            strokeWidth="2"
+            strokeWidth="3"
           />
           
           {/* Bottom disk */}
           <ellipse
-            cx="40"
-            cy="65"
-            rx="20"
-            ry="6"
+            cx="80"
+            cy="130"
+            rx="40"
+            ry="12"
             fill="hsl(var(--database-accent) / 0.3)"
             stroke="hsl(var(--database-accent))"
-            strokeWidth="2"
+            strokeWidth="3"
           />
           
           {/* Bottom cap (full ellipse) */}
           <ellipse
-            cx="40"
-            cy="85"
-            rx="20"
-            ry="6"
+            cx="80"
+            cy="170"
+            rx="40"
+            ry="12"
             fill="hsl(var(--database-primary) / 0.4)"
             stroke="hsl(var(--database-primary))"
-            strokeWidth="2"
+            strokeWidth="3"
           />
           
           {/* Data visualization dots */}
-          <circle cx="30" cy="25" r="1" fill="hsl(var(--database-accent))" opacity="0.8" />
-          <circle cx="35" cy="28" r="1" fill="hsl(var(--database-secondary))" opacity="0.8" />
-          <circle cx="45" cy="27" r="1" fill="hsl(var(--database-primary))" opacity="0.8" />
-          <circle cx="50" cy="26" r="1" fill="hsl(var(--database-accent))" opacity="0.8" />
+          <circle cx="60" cy="50" r="2" fill="hsl(var(--database-accent))" opacity="0.8" />
+          <circle cx="70" cy="56" r="2" fill="hsl(var(--database-secondary))" opacity="0.8" />
+          <circle cx="90" cy="54" r="2" fill="hsl(var(--database-primary))" opacity="0.8" />
+          <circle cx="100" cy="52" r="2" fill="hsl(var(--database-accent))" opacity="0.8" />
           
-          <circle cx="32" cy="50" r="1" fill="hsl(var(--database-primary))" opacity="0.8" />
-          <circle cx="40" cy="52" r="1" fill="hsl(var(--database-secondary))" opacity="0.8" />
-          <circle cx="48" cy="51" r="1" fill="hsl(var(--database-accent))" opacity="0.8" />
+          <circle cx="64" cy="100" r="2" fill="hsl(var(--database-primary))" opacity="0.8" />
+          <circle cx="80" cy="104" r="2" fill="hsl(var(--database-secondary))" opacity="0.8" />
+          <circle cx="96" cy="102" r="2" fill="hsl(var(--database-accent))" opacity="0.8" />
           
           {/* Database label */}
           <text 
-            x="40" 
-            y="96" 
+            x="80" 
+            y="205" 
             textAnchor="middle" 
-            fontSize="8" 
+            fontSize="14" 
             fill="hsl(var(--database-primary))"
             fontFamily="system-ui, sans-serif"
             fontWeight="bold"
