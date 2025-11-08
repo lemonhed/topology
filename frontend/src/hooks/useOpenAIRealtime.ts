@@ -4,20 +4,17 @@ import { z } from 'zod'
 import { RealtimeAgent, RealtimeSession, tool } from '@openai/agents-realtime'
 
 interface UseOpenAIRealtimeState {
-  token: string
-  setToken: (value: string) => void
   isRealtimeConnected: boolean
   isRealtimeConnecting: boolean
   isMuted: boolean
   error: string | null
-  connectRealtime: () => Promise<void>
+  connectRealtime: (apiKey: string) => Promise<void>
   disconnectRealtime: () => void
   toggleMute: () => void
   setEditor: (editor: any) => void
 }
 
 export function useOpenAIRealtime(): UseOpenAIRealtimeState {
-  const [token, setToken] = useState('')
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false)
   const [isRealtimeConnecting, setIsRealtimeConnecting] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
@@ -35,24 +32,46 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
     'Don\'t be too chatty. Just do what the user asks for, with brief responses.' + 
     'IMPORTANT: When drawing items, add AMPLE, PLENTY, LOTS of space between the objects.'
 
-  const connectRealtime = useCallback(async () => {
-    const apiKey = token.trim()
+  const connectRealtime = useCallback(async (apiKey: string) => {
     if (!apiKey) {
-      setError('Ephemeral client token is required')
+      setError('An OpenAI API key is required.')
       return
     }
     
-    // Basic validation for ephemeral token format
-    if (!apiKey.startsWith('ek_') || apiKey.length < 20) {
-      setError('Invalid ephemeral token format. Token should start with "ek_" and be generated from OpenAI API.')
+    if (!apiKey.startsWith('sk-')) {
+      setError('Invalid API key format. Key should start with "sk-".')
       return
     }
     
-    if (isRealtimeConnected || isRealtimeConnecting) return
+    if (isRealtimeConnected || isRealtimeConnecting) return;
 
     setIsRealtimeConnecting(true)
     setError(null)
+
     try {
+      // 1. Generate an ephemeral token
+      const response = await fetch('https://api.openai.com/v1/realtime/client_secrets', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          session: {
+            type: 'realtime',
+            model: 'gpt-realtime',
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Failed to generate ephemeral token.');
+      }
+
+      const { value: ephemeralToken } = await response.json();
+
+      // 2. Use the ephemeral token to connect
       // Geometry helpers for connections
       const centerOf = (s: any) => ({
         x: (s.x ?? 0) + ((s.props?.w ?? 0) / 2),
@@ -330,7 +349,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
       agentRef.current = agent
       sessionRef.current = session
 
-      await session.connect({ apiKey })
+      await session.connect({ apiKey: ephemeralToken })
       setIsRealtimeConnected(true)
       setIsMuted(Boolean((session as any).muted))
     } catch (e: any) {
@@ -343,7 +362,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
     } finally {
       setIsRealtimeConnecting(false)
     }
-  }, [token, isRealtimeConnected, isRealtimeConnecting])
+  }, [isRealtimeConnected, isRealtimeConnecting])
 
   const disconnectRealtime = useCallback(() => {
     try {
@@ -378,8 +397,6 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
   }, [])
 
   return {
-    token,
-    setToken,
     isRealtimeConnected,
     isRealtimeConnecting,
     isMuted,

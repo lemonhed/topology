@@ -10,21 +10,28 @@ import { FrontendShapeUtil } from './components/ui/FrontendShape'
 import { GPTRealtimeShapeUtil } from './components/ui/GPTRealtimeShape'
 import { SuggestionsPopup } from './components/SuggestionsPopup'
 import { useRef, useCallback, useState } from 'react'
+import { ApiKeyModal } from './components/ApiKeyModal'
+import { InfoPopup } from './components/InfoPopup'
 
 export default function Whiteboard() {
-  const { token, setToken, isRealtimeConnected, isRealtimeConnecting, isMuted, error, connectRealtime, disconnectRealtime, toggleMute, setEditor: setEditorOpenAI } = useOpenAIRealtime()
+  const { isRealtimeConnected, isRealtimeConnecting, isMuted, error: realtimeError, connectRealtime, disconnectRealtime, toggleMute, setEditor: setEditorOpenAI } = useOpenAIRealtime()
   const editorRef = useRef<any>(null)
 
-  // Get OpenAI API key from environment variables
-  const openaiApiKey = import.meta.env?.VITE_OPENAI_API_KEY || ''
-  console.log('OpenAI API Key available:', !!openaiApiKey, openaiApiKey ? openaiApiKey.slice(0, 10) + '...' : 'none')
+  const [apiKey, setApiKey] = useState<string | null>(null)
+  const [showApiKeyModal, setShowApiKeyModal] = useState(true)
   
-  const architectureAnalysis = useArchitectureAnalysis(openaiApiKey)
+  const architectureAnalysis = useArchitectureAnalysis(apiKey)
 
   // Add state to track if initial analysis has been done
   const [hasRunInitialAnalysis, setHasRunInitialAnalysis] = useState(false)
 
   // Note: Analysis is now triggered by shape creation events in onMount
+
+  const handleApiKeySubmit = useCallback(async (submittedApiKey: string) => {
+    setApiKey(submittedApiKey)
+    await connectRealtime(submittedApiKey)
+    setShowApiKeyModal(false)
+  }, [connectRealtime])
 
   const handleAcceptSuggestion = useCallback((suggestion: any) => {
     const editor = editorRef.current
@@ -189,47 +196,45 @@ export default function Whiteboard() {
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
+      {showApiKeyModal && (
+        <ApiKeyModal
+          onApiKeySubmit={handleApiKeySubmit}
+          isLoading={isRealtimeConnecting}
+          error={realtimeError}
+        />
+      )}
       {/* Status Bar */}
       <div style={{
         position: 'absolute',
-        top: 10,
-        left: 10,
+        bottom: 150,
+        left: '50%',
+        transform: 'translateX(-50%)',
         zIndex: 1000,
         background: 'rgba(255, 255, 255, 0.9)',
         padding: '8px 12px',
-        borderRadius: '6px',
+        borderRadius: '8px',
         fontSize: '14px',
         display: 'flex',
         gap: '12px',
-        alignItems: 'center'
+        alignItems: 'center',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <input
-            type="password"
-            value={token}
-            onChange={(e) => setToken(((e.target as HTMLInputElement).value || '').trim())}
-            placeholder="Ephemeral realtime token"
-            style={{
-              padding: '4px 8px',
-              borderRadius: '4px',
-              border: '1px solid #ddd',
-              width: 260
-            }}
-          />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button
-            onClick={isRealtimeConnected ? disconnectRealtime : connectRealtime}
-            disabled={isRealtimeConnecting || (!isRealtimeConnected && !token)}
+            onClick={isRealtimeConnected ? disconnectRealtime : () => setShowApiKeyModal(true)}
+            disabled={isRealtimeConnecting}
             style={{
               background: isRealtimeConnected ? '#ff4444' : '#4a7dff',
               opacity: isRealtimeConnecting ? 0.7 : 1,
               border: 'none',
               color: 'white',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              cursor: isRealtimeConnecting ? 'not-allowed' : 'pointer'
+              padding: '10px 16px',
+              borderRadius: '8px',
+              cursor: isRealtimeConnecting ? 'not-allowed' : 'pointer',
+              fontSize: '16px',
             }}
           >
-            {isRealtimeConnected ? 'Disconnect Realtime' : (isRealtimeConnecting ? 'Connecting...' : 'Connect')}
+            {isRealtimeConnected ? 'Disconnect' : (isRealtimeConnecting ? 'Connecting...' : 'Connect')}
           </button>
           <button
             onClick={toggleMute}
@@ -238,9 +243,10 @@ export default function Whiteboard() {
               background: isMuted ? '#888' : '#222',
               border: 'none',
               color: 'white',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              cursor: !isRealtimeConnected ? 'not-allowed' : 'pointer'
+              padding: '10px 16px',
+              borderRadius: '8px',
+              cursor: !isRealtimeConnected ? 'not-allowed' : 'pointer',
+              fontSize: '16px',
             }}
           >
             {isMuted ? 'Unmute' : 'Mute'}
@@ -249,10 +255,12 @@ export default function Whiteboard() {
             {isRealtimeConnected ? (isMuted ? 'Muted' : 'Unmuted') : 'Idle'}
           </span>
         </div>
-                {error ? (
-          <span style={{ color: '#cc0000' }}>{error}</span>
+                {realtimeError && !showApiKeyModal ? (
+          <span style={{ color: '#cc0000' }}>{realtimeError}</span>
         ) : null}
         </div>
+
+      <InfoPopup />
 
       {/* tldraw Canvas */}
       <Tldraw 
@@ -279,7 +287,7 @@ export default function Whiteboard() {
           setTimeout(() => {
             const shapes = editor.getCurrentPageShapes()
             console.log('Editor mounted, shapes:', shapes?.length || 0)
-            if (shapes && shapes.length > 0 && openaiApiKey && !hasRunInitialAnalysis) {
+            if (shapes && shapes.length > 0 && apiKey && !hasRunInitialAnalysis) {
               console.log('Triggering initial analysis from onMount')
               architectureAnalysis.startOrResetAnalysisTimer()
               setHasRunInitialAnalysis(true)
