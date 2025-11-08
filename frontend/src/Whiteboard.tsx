@@ -9,7 +9,7 @@ import { LLMShapeUtil } from './components/ui/LLMShape'
 import { FrontendShapeUtil } from './components/ui/FrontendShape'
 import { GPTRealtimeShapeUtil } from './components/ui/GPTRealtimeShape'
 import { SuggestionsPopup } from './components/SuggestionsPopup'
-import { useRef, useCallback, useEffect, useState } from 'react'
+import { useRef, useCallback, useState } from 'react'
 
 export default function Whiteboard() {
   const { token, setToken, isRealtimeConnected, isRealtimeConnecting, isMuted, error, connectRealtime, disconnectRealtime, toggleMute, setEditor: setEditorOpenAI } = useOpenAIRealtime()
@@ -183,11 +183,9 @@ export default function Whiteboard() {
     architectureAnalysis.dismissSuggestion(suggestion.id)
     
     // Queue a new analysis after adding the component
-    setTimeout(() => {
-      console.log('Running analysis after component addition')
-      architectureAnalysis.analyzeDiagram()
-    }, 10000)
-  }, [architectureAnalysis.dismissSuggestion, architectureAnalysis.analyzeDiagram])
+    console.log('Running analysis after component addition')
+    architectureAnalysis.startOrResetAnalysisTimer()
+  }, [architectureAnalysis])
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
@@ -266,8 +264,6 @@ export default function Whiteboard() {
           architectureAnalysis.setEditor(editor)
           console.log('tldraw editor mounted, setting up shape change listener...')
           
-          let previousShapeCount = 0
-          
           // Listen for shape changes and trigger analysis when new components are added
           editor.sideEffects.registerAfterCreateHandler('shape', (shape) => {
             console.log('🎯 New shape created:', shape.type, shape.id)
@@ -275,10 +271,7 @@ export default function Whiteboard() {
             // Only trigger analysis for our custom component types, not arrows
             if (['database', 'user', 'server', 'llm', 'frontend', 'gpt_realtime'].includes(shape.type)) {
               console.log('🎯 Component added, queuing analysis in 10 seconds...')
-              setTimeout(() => {
-                console.log('🎯 Running analysis after component addition via voice')
-                architectureAnalysis.analyzeDiagram()
-              }, 11000) // 10 second delay to allow user to add more components
+              architectureAnalysis.startOrResetAnalysisTimer()
             }
           })
           
@@ -288,7 +281,7 @@ export default function Whiteboard() {
             console.log('Editor mounted, shapes:', shapes?.length || 0)
             if (shapes && shapes.length > 0 && openaiApiKey && !hasRunInitialAnalysis) {
               console.log('Triggering initial analysis from onMount')
-              architectureAnalysis.analyzeDiagram()
+              architectureAnalysis.startOrResetAnalysisTimer()
               setHasRunInitialAnalysis(true)
             }
           }, 1000)

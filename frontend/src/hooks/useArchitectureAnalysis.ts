@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef } from 'react'
+import { useCallback, useState, useRef, useEffect } from 'react'
 
 interface ArchitectureSuggestion {
   id: string
@@ -18,7 +18,7 @@ interface UseArchitectureAnalysisState {
   isAnalyzing: boolean
   lastAnalysis: Date | null
   error: string | null
-  analyzeDiagram: () => Promise<void>
+  startOrResetAnalysisTimer: () => void
   dismissSuggestion: (id: string) => void
   clearSuggestions: () => void
   setEditor: (editor: any) => void
@@ -30,6 +30,8 @@ export function useArchitectureAnalysis(apiKey: string): UseArchitectureAnalysis
   const [lastAnalysis, setLastAnalysis] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
   const editorRef = useRef<any>(null)
+  const timeoutIdRef = useRef<number | null>(null)
+  const intervalIdRef = useRef<number | null>(null)
 
   const setEditor = useCallback((editor: any) => {
     editorRef.current = editor
@@ -164,7 +166,7 @@ Keep titles under 15 chars, descriptions under 25 chars, reasoning under 20 char
           'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: 'gpt-4o',
+          model: 'gpt-5-mini',
           messages: [
             {
               role: 'user',
@@ -224,6 +226,23 @@ Keep titles under 15 chars, descriptions under 25 chars, reasoning under 20 char
     }
   }, [apiKey, isAnalyzing, extractDiagramData])
 
+  const startOrResetAnalysisTimer = useCallback(() => {
+    if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current)
+    if (intervalIdRef.current) clearInterval(intervalIdRef.current)
+
+    timeoutIdRef.current = window.setTimeout(() => {
+      analyzeDiagram()
+      intervalIdRef.current = window.setInterval(analyzeDiagram, 10000)
+    }, 10000)
+  }, [analyzeDiagram])
+
+  useEffect(() => {
+    return () => {
+      if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current)
+      if (intervalIdRef.current) clearInterval(intervalIdRef.current)
+    }
+  }, [])
+
   const dismissSuggestion = useCallback((id: string) => {
     setSuggestions(prev => prev.filter(s => s.id !== id))
   }, [])
@@ -237,7 +256,7 @@ Keep titles under 15 chars, descriptions under 25 chars, reasoning under 20 char
     isAnalyzing,
     lastAnalysis,
     error,
-    analyzeDiagram,
+    startOrResetAnalysisTimer,
     dismissSuggestion,
     clearSuggestions,
     setEditor
