@@ -28,14 +28,12 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
   const editorRef = useRef<any>(null)
 
 
-
-
   const SYSTEM_PROMPT =
     'You are Rubber Ducky Bot. The user is discussing how their system architecture will look. You are mainly tasked with sitting there and listening. When they have mentioned an item that you\'re able to draw, draw it using the tool. If they go on a longwinded rant about the different components of their system, write that on the side, using dashes as bullet points. It will be a briefer version of what they want. Be brief and concise, but kind and friendly. Interpret spoken instructions as immediate tool calls. If they describe what their product is going to be at a high level, also add text that explains that with bullet points.' +
     'Do not wait for full sentences if a coherent unit of action is clear. ' +
     'Allowed item types: database, person, server, gpt_5, frontend, gpt_realtime. Return UUIDs from draw_item and reuse them.' +
     'Don\'t be too chatty. Just do what the user asks for, with brief responses.' + 
-    'IMPORTANT: When drawing items, add ample space between the objects.'
+    'IMPORTANT: When drawing items, add AMPLE, PLENTY, LOTS of space between the objects.'
 
   const connectRealtime = useCallback(async () => {
     const apiKey = token.trim()
@@ -101,7 +99,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
       // Whiteboard tools
       const drawItem = tool({
         name: 'draw_item',
-        description: 'Draw an item on the canvas. Coordinates are in pixels from top-left. Canvas is roughly 1500x1000.',
+        description: 'Draw an item on the canvas. Coordinates are in pixels from top-left. Canvas is roughly 1500x600.',
         parameters: z.object({
           item_type: z.enum(['database', 'person', 'server', 'gpt_5', 'frontend', 'gpt_realtime']),
           x: z.number().describe('X coordinate in pixels'),
@@ -279,7 +277,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
 
       const addText = tool({
         name: 'add_text',
-        description: 'Add text to the whiteboard. Coordinates are in pixels from top-left. Canvas is roughly 1500x1000.',
+        description: 'Add text to the whiteboard. Coordinates are in pixels from top-left. Canvas is roughly 1500x800.',
         parameters: z.object({
           text: z.string(),
           x: z.number().describe('X coordinate in pixels'),
