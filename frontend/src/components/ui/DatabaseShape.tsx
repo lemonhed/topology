@@ -1,14 +1,13 @@
-import { BaseBoxShapeUtil, HTMLContainer, TLBaseShape } from 'tldraw'
+import { BaseBoxShapeUtil, HTMLContainer, TLShape } from 'tldraw'
+
+declare module '@tldraw/tlschema' {
+  interface TLGlobalShapePropsMap {
+    database: { w: number; h: number; color: string }
+  }
+}
 
 // Define the shape type
-export type DatabaseShape = TLBaseShape<
-  'database',
-  {
-    w: number
-    h: number
-    color: string
-  }
->
+export type DatabaseShape = TLShape<'database'>
 
 // Define the shape utility class
 export class DatabaseShapeUtil extends BaseBoxShapeUtil<DatabaseShape> {
@@ -133,7 +132,7 @@ export class DatabaseShapeUtil extends BaseBoxShapeUtil<DatabaseShape> {
         width={bounds.width}
         height={bounds.height}
         fill="none"
-        stroke="var(--color-selected)"
+        stroke="var(--tl-color-selected)"
         strokeWidth="1"
         strokeDasharray="3 3"
       />

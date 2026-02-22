@@ -1,14 +1,13 @@
-import { BaseBoxShapeUtil, HTMLContainer, TLBaseShape } from 'tldraw'
+import { BaseBoxShapeUtil, HTMLContainer, TLShape } from 'tldraw'
+
+declare module '@tldraw/tlschema' {
+  interface TLGlobalShapePropsMap {
+    gpt_realtime: { w: number; h: number; color: string }
+  }
+}
 
 // Define the shape type
-export type GPTRealtimeShape = TLBaseShape<
-  'gpt_realtime',
-  {
-    w: number
-    h: number
-    color: string
-  }
->
+export type GPTRealtimeShape = TLShape<'gpt_realtime'>
 
 // Define the shape utility class
 export class GPTRealtimeShapeUtil extends BaseBoxShapeUtil<GPTRealtimeShape> {
@@ -174,7 +173,7 @@ export class GPTRealtimeShapeUtil extends BaseBoxShapeUtil<GPTRealtimeShape> {
         width={bounds.width}
         height={bounds.height}
         fill="none"
-        stroke="var(--color-selected)"
+        stroke="var(--tl-color-selected)"
         strokeWidth="1"
         strokeDasharray="3 3"
       />

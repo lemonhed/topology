@@ -1,11 +1,18 @@
 
 
+interface SuggestionConnection {
+  to_component_id: string
+  description: string
+  direction: 'to' | 'from' | 'bidirectional'
+}
+
 interface ArchitectureSuggestion {
   id: string
   title: string
   description: string
   component_type: 'database' | 'person' | 'server' | 'gpt_5' | 'frontend' | 'gpt_realtime'
   reasoning: string
+  connections?: SuggestionConnection[]
 }
 
 interface SuggestionsPopupProps {
@@ -15,7 +22,7 @@ interface SuggestionsPopupProps {
   onDismiss: (id: string) => void
   onClearAll: () => void
   onAcceptSuggestion: (suggestion: ArchitectureSuggestion) => void
-  lastAnalysis: Date | null
+  lastAnalysis?: Date | null
 }
 
 const getComponentIcon = (type: string) => {
@@ -61,7 +68,6 @@ export function SuggestionsPopup({
   onDismiss,
   onClearAll,
   onAcceptSuggestion,
-  lastAnalysis
 }: SuggestionsPopupProps) {
   // Only show popup when there are actual suggestions to display
   const hasContent = suggestions.length > 0
@@ -201,7 +207,7 @@ export function SuggestionsPopup({
                 borderRadius: '3px',
                 border: '1px solid #d1fae5'
               }}>
-                → {suggestion.connections.map(c => c.description).join(', ')}
+                → {suggestion.connections!.map((c: SuggestionConnection) => c.description).join(', ')}
               </div>
             )}
 

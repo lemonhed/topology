@@ -29,7 +29,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
     'You are Rubber Ducky Bot. The user is discussing how their system architecture will look. You are mainly tasked with sitting there and listening. When they have mentioned an item that you\'re able to draw, draw it using the tool. If they go on a longwinded rant about the different components of their system, write that on the side, using dashes as bullet points. It will be a briefer version of what they want. Be brief and concise, but kind and friendly. Interpret spoken instructions as immediate tool calls. If they describe what their product is going to be at a high level, also add text that explains that with bullet points.' +
     'Do not wait for full sentences if a coherent unit of action is clear. ' +
     'Allowed item types: database, person, server, gpt_5, frontend, gpt_realtime. Return UUIDs from draw_item and reuse them.' +
-    'Don\'t be too chatty. Just do what the user asks for, with brief responses.' + 
+    'Don\'t be too chatty. Just do what the user asks for, with brief responses.' +
     'IMPORTANT: When drawing items, add AMPLE, PLENTY, LOTS of space between the objects.'
 
   const connectRealtime = useCallback(async (apiKey: string) => {
@@ -37,12 +37,12 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
       setError('An OpenAI API key is required.')
       return
     }
-    
+
     if (!apiKey.startsWith('sk-')) {
       setError('Invalid API key format. Key should start with "sk-".')
       return
     }
-    
+
     if (isRealtimeConnected || isRealtimeConnecting) return;
 
     setIsRealtimeConnecting(true)
@@ -59,7 +59,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
         body: JSON.stringify({
           session: {
             type: 'realtime',
-            model: 'gpt-realtime',
+            model: 'gpt-4o-realtime-preview',
           },
         }),
       });
@@ -100,7 +100,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
         const c = centerOf(s)
         const hw = (s.props?.w ?? 0) / 2
         const hh = (s.props?.h ?? 0) / 2
-        
+
         // Use shape type to determine geometry
         const shapeType = s.type
         if (shapeType === 'server' || shapeType === 'gpt_realtime') {
@@ -110,7 +110,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
           // Database, user, and GPT-5 (llm shape) are more circular/elliptical
           return edgePointEllipse(c, hw, hh, toward)
         }
-        
+
         // Fallback to center for unknown shapes
         return c
       }
@@ -130,17 +130,17 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
 
           const uuid = (globalThis as any).crypto?.randomUUID?.() || `${Date.now()}_${Math.random().toString(36).slice(2)}`
           const shapeId = `shape:${uuid}`
-          
+
           // Map item types to custom shape types
           const shapeTypeMap = {
             'database': 'database',
-            'person': 'user', 
+            'person': 'user',
             'server': 'server',
             'gpt_5': 'llm',
             'frontend': 'frontend',
             'gpt_realtime': 'gpt_realtime',
           }
-          
+
           const shape = {
             id: shapeId,
             type: shapeTypeMap[item_type],
@@ -184,7 +184,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
           if (direction === 'two_way') {
             // Create a bidirectional arrow
             const arrowId = `shape:bidirectional_${item1_uuid}_${item2_uuid}`
-            
+
             editor.createShapes([
               {
                 id: arrowId,
@@ -216,7 +216,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
                 }
               },
               {
-                id: `binding:${arrowId}_end`, 
+                id: `binding:${arrowId}_end`,
                 type: 'arrow',
                 fromId: arrowId,
                 toId: `shape:${item2_uuid}`,
@@ -231,7 +231,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
           } else {
             // Create a one-way arrow (default)
             const arrowId = `shape:connection_${item1_uuid}_${item2_uuid}`
-            
+
             editor.createShapes([
               {
                 id: arrowId,
@@ -261,7 +261,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
                 }
               },
               {
-                id: `binding:${arrowId}_end`, 
+                id: `binding:${arrowId}_end`,
                 type: 'arrow',
                 fromId: arrowId,
                 toId: `shape:${item2_uuid}`,
@@ -287,7 +287,7 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
         execute: async ({ item_uuid }: { item_uuid: string }) => {
           const editor = editorRef.current
           if (!editor) throw new Error('Editor not initialised')
-          
+
           const shape = editor.getShape?.(`shape:${item_uuid}`)
           if (shape) editor.deleteShapes([shape.id])
           return 'ok'
@@ -329,27 +329,72 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
         tools: [drawItem, connectItems, deleteItem, addText]
       });
 
+      const REALTIME_MODEL = 'gpt-4o-realtime-preview'
+
       const session = new RealtimeSession(agent, {
+        model: REALTIME_MODEL,
         config: {
-          turnDetection: {
-            type: 'semantic_vad',
-            eagerness: 'high',
-            createResponse: true,
-            interruptResponse: true,
+          audio: {
+            input: {
+              turnDetection: {
+                type: 'server_vad',
+                silenceDurationMs: 500,
+                threshold: 0.5,
+              },
+            },
           },
         },
       })
 
-      // Log transport events from the realtime server
+      // Log all session events for debugging
       session.on('transport_event', (event: unknown) => {
-        // eslint-disable-next-line no-console
-        console.log('realtime transport_event', event)
+        const evt = event as any
+        const type = evt?.type ?? ''
+        // Highlight response/session events prominently
+        if (type === 'error') {
+          console.error('❌ SERVER ERROR', JSON.stringify(evt, null, 2))
+        } else if (type.startsWith('response.')) {
+          if (type === 'response.done') {
+            const resp = evt?.response
+            console.log('🔵 RESPONSE DONE', 'status:', resp?.status, 'output:', JSON.stringify(resp?.output), 'status_details:', JSON.stringify(resp?.status_details))
+          } else {
+            console.log('🔵 RESPONSE EVENT', type, evt)
+          }
+        } else if (type === 'session.updated') {
+          console.log('✅ SESSION UPDATED', JSON.stringify(evt?.session, null, 2))
+        } else if (type.startsWith('input_audio_buffer.')) {
+          console.log('🎤', type)
+        } else {
+          console.log('realtime transport_event', type, evt)
+        }
+      })
+      session.on('error', (error: unknown) => {
+        console.error('🔴 realtime session error', JSON.stringify(error, null, 2))
+      })
+      session.on('agent_start', (...args: unknown[]) => {
+        console.log('🟢 agent_start', args)
+      })
+      session.on('agent_end', (...args: unknown[]) => {
+        console.log('🟢 agent_end', args)
+      })
+      session.on('tool_start', (...args: unknown[]) => {
+        console.log('🔧 tool_start', args)
+      })
+      session.on('tool_end', (...args: unknown[]) => {
+        console.log('🔧 tool_end', args)
+      })
+      session.on('guardrail_tripped', (...args: unknown[]) => {
+        console.log('⚠️ guardrail_tripped', args)
+      })
+      session.on('history_updated', (...args: unknown[]) => {
+        console.log('📜 history_updated', args)
       })
 
       agentRef.current = agent
       sessionRef.current = session
 
-      await session.connect({ apiKey: ephemeralToken })
+      await session.connect({ apiKey: ephemeralToken, model: REALTIME_MODEL })
+
       setIsRealtimeConnected(true)
       setIsMuted(Boolean((session as any).muted))
     } catch (e: any) {
@@ -407,5 +452,3 @@ export function useOpenAIRealtime(): UseOpenAIRealtimeState {
     setEditor
   }
 }
-
-

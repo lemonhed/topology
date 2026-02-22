@@ -1,14 +1,13 @@
-import { BaseBoxShapeUtil, HTMLContainer, TLBaseShape } from 'tldraw'
+import { BaseBoxShapeUtil, HTMLContainer, TLShape } from 'tldraw'
+
+declare module '@tldraw/tlschema' {
+  interface TLGlobalShapePropsMap {
+    frontend: { w: number; h: number; color: string }
+  }
+}
 
 // Define the shape type
-export type FrontendShape = TLBaseShape<
-  'frontend',
-  {
-    w: number
-    h: number
-    color: string
-  }
->
+export type FrontendShape = TLShape<'frontend'>
 
 // Define the shape utility class
 export class FrontendShapeUtil extends BaseBoxShapeUtil<FrontendShape> {
@@ -203,7 +202,7 @@ export class FrontendShapeUtil extends BaseBoxShapeUtil<FrontendShape> {
         width={bounds.width}
         height={bounds.height}
         fill="none"
-        stroke="var(--color-selected)"
+        stroke="var(--tl-color-selected)"
         strokeWidth="1"
         strokeDasharray="3 3"
       />

@@ -1,14 +1,13 @@
-import { BaseBoxShapeUtil, HTMLContainer, TLBaseShape } from 'tldraw'
+import { BaseBoxShapeUtil, HTMLContainer, TLShape } from 'tldraw'
+
+declare module '@tldraw/tlschema' {
+  interface TLGlobalShapePropsMap {
+    server: { w: number; h: number; color: string }
+  }
+}
 
 // Define the shape type
-export type ServerShape = TLBaseShape<
-  'server',
-  {
-    w: number
-    h: number
-    color: string
-  }
->
+export type ServerShape = TLShape<'server'>
 
 // Define the shape utility class
 export class ServerShapeUtil extends BaseBoxShapeUtil<ServerShape> {
@@ -138,7 +137,7 @@ export class ServerShapeUtil extends BaseBoxShapeUtil<ServerShape> {
         width={bounds.width}
         height={bounds.height}
         fill="none"
-        stroke="var(--color-selected)"
+        stroke="var(--tl-color-selected)"
         strokeWidth="1"
         strokeDasharray="3 3"
       />

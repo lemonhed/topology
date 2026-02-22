@@ -12,6 +12,7 @@ import { SuggestionsPopup } from './components/SuggestionsPopup'
 import { useRef, useCallback, useState } from 'react'
 import { ApiKeyModal } from './components/ApiKeyModal'
 import { InfoPopup } from './components/InfoPopup'
+import { hasSavedKey } from './lib/secureStorage'
 
 export default function Whiteboard() {
   const { isRealtimeConnected, isRealtimeConnecting, isMuted, error: realtimeError, connectRealtime, disconnectRealtime, toggleMute, setEditor: setEditorOpenAI } = useOpenAIRealtime()
@@ -19,8 +20,9 @@ export default function Whiteboard() {
 
   const [apiKey, setApiKey] = useState<string | null>(null)
   const [showApiKeyModal, setShowApiKeyModal] = useState(true)
+  const [savedKeyExists] = useState(() => hasSavedKey())
   
-  const architectureAnalysis = useArchitectureAnalysis(apiKey)
+  const architectureAnalysis = useArchitectureAnalysis(apiKey ?? '')
 
   // Add state to track if initial analysis has been done
   const [hasRunInitialAnalysis, setHasRunInitialAnalysis] = useState(false)
@@ -201,6 +203,7 @@ export default function Whiteboard() {
           onApiKeySubmit={handleApiKeySubmit}
           isLoading={isRealtimeConnecting}
           error={realtimeError}
+          hasSavedApiKey={savedKeyExists}
         />
       )}
       {/* Status Bar */}

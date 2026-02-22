@@ -191,6 +191,31 @@ function LandingPage() {
           </div>
         </div>
       </main>
+
+      {/* Credits footer */}
+      <footer style={{
+        position: 'absolute',
+        bottom: '1.5rem',
+        left: 0,
+        right: 0,
+        zIndex: 10,
+        textAlign: 'center',
+        fontSize: '0.8rem',
+        color: '#9ca3af',
+        lineHeight: '1.6',
+      }}>
+        <span>Forked from{' '}
+          <a href="https://github.com/leocamacho" target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', textDecoration: 'none' }}>Leo Camacho</a>
+        </span>
+        <span style={{ margin: '0 0.5rem', opacity: 0.4 }}>|</span>
+        <span>Powered by{' '}
+          <a href="https://platform.openai.com/docs/guides/realtime" target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', textDecoration: 'none' }}>OpenAI Realtime API</a>
+          {', '}
+          <a href="https://tldraw.dev" target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', textDecoration: 'none' }}>tldraw</a>
+          {' & '}
+          <a href="https://react.dev" target="_blank" rel="noopener noreferrer" style={{ color: '#7c3aed', textDecoration: 'none' }}>React</a>
+        </span>
+      </footer>
     </div>
   );
 }
