@@ -13,6 +13,7 @@ import { SuggestionsPopup } from './components/SuggestionsPopup'
 import { WorkflowToolbar } from './components/WorkflowToolbar'
 import { DocumentationView } from './components/DocumentationView'
 import { WorkflowPicker } from './components/WorkflowPicker'
+import { TranscriptInput } from './components/TranscriptInput'
 import { useRef, useCallback, useState, useEffect } from 'react'
 import { ApiKeyModal } from './components/ApiKeyModal'
 import { InfoPopup } from './components/InfoPopup'
@@ -129,6 +130,7 @@ export default function Whiteboard() {
   const [savedKeyExists] = useState(() => hasSavedKey())
   const [activeView, setActiveView] = useState<'whiteboard' | 'documentation'>('whiteboard')
   const [showWorkflowPicker, setShowWorkflowPicker] = useState(false)
+  const [showTranscriptInput, setShowTranscriptInput] = useState(false)
   // Track mute state before switching to docs so we can restore it
   const wasMutedBeforeDocsRef = useRef(false)
 
@@ -211,6 +213,38 @@ export default function Whiteboard() {
       }
     }
   }, [workflowHook])
+
+  // Handle completed transcript processing
+  const handleTranscriptResult = useCallback((workflow: Workflow) => {
+    // Reset current workflow state
+    workflowHook.resetWorkflow()
+
+    // Clear existing canvas shapes
+    const editor = editorRef.current
+    if (editor) {
+      const allShapes = editor.getCurrentPageShapes()
+      if (allShapes.length > 0) {
+        editor.deleteShapes(allShapes.map((s: any) => s.id))
+      }
+    }
+
+    // Load the new workflow into state
+    workflowHook.loadWorkflow(workflow)
+
+    // Render the workflow on the canvas
+    if (editor) {
+      renderWorkflowToCanvas(workflow, editor)
+    }
+
+    // Auto-save
+    saveWorkflow(workflow)
+
+    // Close modal and ensure whiteboard view
+    setShowTranscriptInput(false)
+    if (activeView !== 'whiteboard') {
+      setActiveView('whiteboard')
+    }
+  }, [workflowHook, activeView])
 
   const handleApiKeySubmit = useCallback(async (submittedApiKey: string) => {
     setApiKey(submittedApiKey)
@@ -421,6 +455,15 @@ export default function Whiteboard() {
         />
       )}
 
+      {/* Transcript Input modal */}
+      {showTranscriptInput && apiKey && (
+        <TranscriptInput
+          apiKey={apiKey}
+          onWorkflowReady={handleTranscriptResult}
+          onClose={() => setShowTranscriptInput(false)}
+        />
+      )}
+
       {/* Workflow Toolbar — always visible */}
       <WorkflowToolbar
         workflow={workflowHook.workflow}
@@ -431,6 +474,7 @@ export default function Whiteboard() {
         isMuted={isMuted}
         onOpenPicker={() => setShowWorkflowPicker(true)}
         hasSavedWorkflows={listWorkflows().length > 0}
+        onImportTranscript={() => setShowTranscriptInput(true)}
       />
 
       {/* Documentation View */}

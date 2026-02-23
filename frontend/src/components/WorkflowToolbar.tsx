@@ -12,6 +12,7 @@ interface WorkflowToolbarProps {
   isMuted: boolean
   onOpenPicker?: () => void
   hasSavedWorkflows?: boolean
+  onImportTranscript?: () => void
 }
 
 export function WorkflowToolbar({
@@ -23,6 +24,7 @@ export function WorkflowToolbar({
   isMuted,
   onOpenPicker,
   hasSavedWorkflows,
+  onImportTranscript,
 }: WorkflowToolbarProps) {
   const [isEditingName, setIsEditingName] = useState(false)
   const [editName, setEditName] = useState(workflow.name)
@@ -100,6 +102,11 @@ export function WorkflowToolbar({
         {onOpenPicker && (
           <button onClick={onOpenPicker} style={styles.actionBtn} title="Open saved workflow">
             {hasSavedWorkflows ? 'Open' : 'Sessions'}
+          </button>
+        )}
+        {onImportTranscript && (
+          <button onClick={onImportTranscript} style={styles.actionBtn} title="Import from transcript">
+            Import
           </button>
         )}
         <button onClick={handleSave} style={styles.actionBtn} title="Save workflow">
