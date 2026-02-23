@@ -123,7 +123,7 @@ After EVERY draw_item call, IMMEDIATELY call add_text to label the shape below i
         body: JSON.stringify({
           session: {
             type: 'realtime',
-            model: 'gpt-4o-realtime-preview',
+            model: 'gpt-realtime',
           },
         }),
       });
@@ -612,7 +612,7 @@ After EVERY draw_item call, IMMEDIATELY call add_text to label the shape below i
         ]
       });
 
-      const REALTIME_MODEL = 'gpt-4o-realtime-preview'
+      const REALTIME_MODEL = 'gpt-realtime'
 
       const session = new RealtimeSession(agent, {
         model: REALTIME_MODEL,

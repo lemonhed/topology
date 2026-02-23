@@ -271,7 +271,7 @@ export async function processTranscript(
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4.1',
         messages,
         tools: TOOLS,
         temperature: 0.3,
