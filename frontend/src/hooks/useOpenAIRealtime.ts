@@ -4,6 +4,18 @@ import { z } from 'zod'
 import { RealtimeAgent, RealtimeSession, tool } from '@openai/agents-realtime'
 import type { WorkflowActions } from './useWorkflow'
 
+/** Convert plain text to tldraw v4 richText (ProseMirror doc) */
+function toRichText(text: string) {
+  const lines = text.split('\n')
+  return {
+    type: 'doc' as const,
+    content: lines.map((line) => ({
+      type: 'paragraph' as const,
+      ...(line ? { content: [{ type: 'text' as const, text: line }] } : {}),
+    })),
+  }
+}
+
 interface UseOpenAIRealtimeState {
   isRealtimeConnected: boolean
   isRealtimeConnecting: boolean
@@ -377,7 +389,7 @@ After EVERY draw_item call, IMMEDIATELY call add_text to label the shape below i
             x,
             y,
             props: {
-              text,
+              richText: toRichText(text),
               size: 's',
               color: 'black',
             },
@@ -434,7 +446,7 @@ After EVERY draw_item call, IMMEDIATELY call add_text to label the shape below i
               type: 'text',
               x: x + 10,
               y: y + 150,
-              props: { text: `${name}\n(${role})`, size: 's', color: 'black' },
+              props: { richText: toRichText(`${name}\n(${role})`), size: 's', color: 'black' },
             }])
           }
 
@@ -496,7 +508,7 @@ After EVERY draw_item call, IMMEDIATELY call add_text to label the shape below i
                 w,
                 h,
                 geo: step_type === 'decision' ? 'diamond' : 'rectangle',
-                text: action,
+                richText: toRichText(action),
                 size: 's',
                 color: step_type === 'decision' ? 'orange' : 'blue',
                 fill: 'semi',
@@ -559,7 +571,7 @@ After EVERY draw_item call, IMMEDIATELY call add_text to label the shape below i
                   type: 'text',
                   x: (start.x + end.x) / 2 + 10,
                   y: (start.y + end.y) / 2 - 10,
-                  props: { text: condition, size: 's', color: 'grey' },
+                  props: { richText: toRichText(condition), size: 's', color: 'grey' },
                 }])
               }
             }

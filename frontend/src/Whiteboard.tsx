@@ -1,6 +1,18 @@
 import { Tldraw } from 'tldraw'
 import 'tldraw/tldraw.css'
 import { useOpenAIRealtime } from './hooks/useOpenAIRealtime'
+
+/** Convert plain text to tldraw v4 richText (ProseMirror doc) */
+function toRichText(text: string) {
+  const lines = text.split('\n')
+  return {
+    type: 'doc' as const,
+    content: lines.map((line) => ({
+      type: 'paragraph' as const,
+      ...(line ? { content: [{ type: 'text' as const, text: line }] } : {}),
+    })),
+  }
+}
 import { useWorkflow } from './hooks/useWorkflow'
 import { useArchitectureAnalysis } from './hooks/useArchitectureAnalysis'
 import { DatabaseShapeUtil } from './components/ui/DatabaseShape'
@@ -39,7 +51,7 @@ function renderWorkflowToCanvas(workflow: Workflow, editor: any) {
       type: 'text',
       x: x + 10,
       y: y + 150,
-      props: { text: `${p.name}\n(${p.role})`, size: 's', color: 'black' },
+      props: { richText: toRichText(`${p.name}\n(${p.role})`), size: 's', color: 'black' },
     }])
   })
 
@@ -67,7 +79,7 @@ function renderWorkflowToCanvas(workflow: Workflow, editor: any) {
         w,
         h,
         geo: step.type === 'decision' ? 'diamond' : 'rectangle',
-        text: step.action,
+        richText: toRichText(step.action),
         size: 's',
         color: step.type === 'decision' ? 'orange' : 'blue',
         fill: 'semi',
@@ -103,7 +115,7 @@ function renderWorkflowToCanvas(workflow: Workflow, editor: any) {
         type: 'text',
         x: (from.x + to.x) / 2 + 10,
         y: (from.y + from.h + to.y) / 2 - 10,
-        props: { text: flow.condition, size: 's', color: 'grey' },
+        props: { richText: toRichText(flow.condition), size: 's', color: 'grey' },
       }])
     }
   })
