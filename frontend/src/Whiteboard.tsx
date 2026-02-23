@@ -500,7 +500,11 @@ export default function Whiteboard() {
       )}
 
       {/* Whiteboard View — hidden (not unmounted) when in docs view */}
-      <div style={{ display: activeView === 'whiteboard' ? 'block' : 'none', width: '100%', height: '100%' }}>
+      <div style={{
+        display: activeView === 'whiteboard' ? 'block' : 'none',
+        position: 'absolute',
+        inset: 0,
+      }}>
         {/* Status Bar */}
         <div style={{
           position: 'absolute',
